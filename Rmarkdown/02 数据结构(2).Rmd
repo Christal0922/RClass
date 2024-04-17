@@ -1,0 +1,210 @@
+---
+title: "02 数据结构(2)"
+date: "`r Sys.Date()`"
+output:
+  rmdformats::readthedown:
+    highlight: tango
+    toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+## Global options
+knitr::opts_chunk$set(cache = FALSE,prompt = TRUE,collapse = TRUE,comment='')
+```
+
+# 向量
+## 向量的创建
+```{r}
+a <- c(2,5,8,-2,9,7)
+a
+b <- seq(2,20,2)
+b
+c <- rep(c(1,2,3),each=3)
+c
+```
+## 向量的索引
+```{r}
+a[4]
+a[4:6]
+a[c(1,4)]
+a[-4]
+```
+## 向量的计算
+```{r}
+# 均值
+mean(a)
+# 求和
+sum(a)
+# a向量中有多少个元素
+length(a)
+# 最大值
+max(a)
+# 最小值
+min(a)
+```
+## 向量的排序
+```{r}
+a
+sort(a) #升序排列
+sort(a,decreasing = T) #降序排列
+```
+## 随机数的生成
+```{r}
+set.seed(123)
+# 正态分布,rnorm
+rnorm(10,8,3) # 产生10个均值为8，标准差为3的符合正态分布的随机数
+# 均匀分布,runif
+runif(10,3,8) # 产生10个最小值为3，最大值为8的符合均匀分布的随机数
+```
+
+# 矩阵
+## 矩阵的创建
+```{r}
+mat1 <- matrix(1:6,nrow = 2,ncol = 3)
+rownames(mat1) <- c("23大数据Z1","23大数据Z2")
+colnames(mat1) <- c("R语言","Python","Web")
+mat1
+```
+```{r}
+# 按行填充
+mat2 <- matrix(1:6,nrow = 2,ncol = 3,byrow = T,
+               dimnames = list(
+                 c("23大数据Z1","23大数据Z2"),
+                 c("R语言","Python","Web")
+               ))
+mat2
+```
+
+```{r}
+set.seed(123)
+# 产生6个最小值为75，最大值为100的符合均匀分布的随机数
+A <- round(runif(6,75,100)) #round四舍五入
+mat3 <- matrix(A,nrow = 2,ncol = 3,
+               dimnames = list(
+                 c("22大数据Z1","22大数据Z2"),
+                 c("R语言","Python","Web")
+               ))
+mat3
+```
+
+## 矩阵的索引
+```{r}
+mat3[1,1]
+mat3[2,]
+mat3[,c(1,3)]
+mat3[,-2]
+```
+## 矩阵的修改
+```{r}
+mat1[1,1] <- 76
+mat1[1,2:3] <- c(85,88)
+mat1[2,] <- NA
+mat1
+```
+## 矩阵的合并
+```{r}
+rbind(mat1,mat3)
+```
+创建一个2x2矩阵mat4,数据为75-100的随机数，行名为23大数据Z1，23大数据Z2，列名为经济学，统计学
+```{r}
+set.seed(123)
+B <- round(runif(4,75,100))
+mat4 <- matrix(B,nrow = 2,ncol = 2,
+               dimnames = list(
+                 c("23大数据Z1","23大数据Z2"),
+                 c("经济学","统计学")
+               ))
+mat4
+```
+按列进行合并cbind
+```{r}
+mat5 <- cbind(mat1,mat4)
+mat5
+```
+## 查看矩阵的信息
+```{r}
+dim(mat1) # 查看矩阵的维度，为2行3列
+head(mat1,1) # 查看矩阵的前1行
+```
+
+# 数组
+## 数组的创建
+```{r}
+dim1 <- c("23大数据Z1","23大数据Z2")
+dim2 <- c("R语言","Python","Web")
+dim3 <- c("男生","女生")
+set.seed(123)
+C <- round(runif(12,75,100))
+arr1 <- array(C,c(2,2,3),dimnames = list(
+  dim1,dim3,dim2
+))
+arr1
+```
+
+```{r}
+set.seed(123)
+D <- round(runif(24,3,15))
+dim1 <- c("22大数据Z1","22大数据Z2","23大数据Z1","23大数据Z2")
+dim2 <- c("赞成","中立","反对")
+dim3 <- c("男生","女生")
+arr2 <- array(D,c(4,3,2),
+              dimnames = list(dim1,dim2,dim3))
+arr2
+```
+# 数据框
+## 数据框的创建
+```{r}
+set.seed(123)
+stuname <- c("刘文涛","王宇翔","田思雨","徐丽娜","丁文斌")
+stat <- round(runif(5,85,100))
+math <- round(runif(5,60,85))
+econ <- round(runif(5,75,95))
+stuscore <- data.frame(stuname,stat,math,econ)
+colnames(stuscore) <- c("学生姓名","统计学","数学","经济学")
+stuscore
+```
+
+```{r}
+stuscore2 <- data.frame(学生姓名=stuname,统计学=stat,数学=math,经济学=econ)
+stuscore2
+```
+## 查看数据框
+```{r}
+str(stuscore) #查看数据框的数据结构
+head(stuscore,3) #查看数据框的前3行
+tail(stuscore,3) #查看数据框的后3行
+nrow(stuscore) # 查看数据框的行数
+ncol(stuscore) # 查看数据框的列数
+```
+
+## 数据框的排序
+```{r}
+stuscore[order(stuscore$统计学),] #按统计学成绩进行升序排列
+stuscore[order(stuscore$统计学,decreasing = T),]
+#按统计学成绩进行降序排列
+```
+
+# 因子
+## 因子的创建
+```{r}
+b <- c("金融","地产","医药","医药","金融","医药")
+str(b)
+f1 <- factor(b,levels = c("金融","地产","医药"),ordered = T)
+str(f1)
+as.numeric(f1)
+```
+
+
+
+```{r}
+b <- c("A","B","C","A","B","D","E","A","D","B")
+str(b)
+f2 <- factor(b,ordered = T,levels = c("E","D","C","B","A"))
+str(f2)
+as.numeric(f2)
+```
+
+```{r}
+b <- c("优","良","轻度污染","中度污染","重度污染","良","轻度污染")
+```
+
