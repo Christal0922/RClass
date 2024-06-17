@@ -1,0 +1,2 @@
+"0","## Global options"
+"0","knitr::opts_chunk$set(echo = TRUE,collapse = TRUE,comment = '')"

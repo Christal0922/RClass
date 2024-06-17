@@ -1,0 +1,55 @@
+---
+title: "01 基础语法"
+date: "`r Sys.Date()`"
+output:
+  rmdformats::readthedown:
+    highlight: kate
+---
+
+```{r setup, include=FALSE}
+## Global options
+knitr::opts_chunk$set(echo = TRUE,collapse = TRUE,comment = '')
+```
+
+# 环境配置
+```{r eval=FALSE, include=FALSE}
+devtools::install_github("tidyverse/dplyr")
+
+```
+
+# 控制结构  
+## apply函数族
+```{r}
+x=matrix(1:6,nrow = 2,ncol = 3)
+x
+```
++ apply函数
+```{r}
+# 按行求均值
+apply(x,1,mean)
+# 按列求均值
+apply(x,2,mean)
+```
++ tapply函数  
+按照因子分组，实现逐分组迭代
+```{r}
+height=c(165,170,168,172,159)
+sex=factor(c("男","女","男","男","女"))
+tapply(height,sex, mean)
+```
+
++ lapply函数  
+用来对vector、list、data.frame逐元、逐成分、逐列分别应用函数FUN，并返回和x长度相同的list对象
+```{r}
+df <- iris[,1:4]
+lapply(df,mean)
+```
+
++ sapply函数  
+
+sapply函数是lapply的简化版本，只是多了一个参数simplify,若simplify=FALSE,则与lapply函数相同，若simplify=TRUE, 则将输出的list简化为向量或矩阵。
+```{r}
+sapply(df,mean)
+```
+
+

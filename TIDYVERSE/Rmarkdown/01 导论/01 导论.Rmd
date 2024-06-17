@@ -1,0 +1,19 @@
+---
+title: "01 导论"
+date: "`r Sys.Date()`"
+output:
+  rmdformats::readthedown:
+    highlight: kate
+    toc: 3
+---
+```{r setup, include=FALSE}
+## Global options
+knitr::opts_chunk$set(cache = F,collapse = T)
+```
+
+# 字体设置  
+```{r include=FALSE}
+library(showtext)
+showtext_auto(enable=T)
+font_add("STKaiti","/Library/Fonts/stkaiti.ttf")
+```
