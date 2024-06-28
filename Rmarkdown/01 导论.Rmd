@@ -12,4 +12,137 @@ output:
 knitr::opts_chunk$set(cache = F)
 ```
 
+# 基本数据结构
+
+# 条件判断与控制语句
+
+## 条件判断语句
+
+```{r if}
+A <- 2
+B <- 5
+if (A>B) {
+  print(A+B)
+} else {
+  print(A*B)
+}
+```
+
+```{r ifelse}
+A <- 2
+B <- 5
+ifelse(A>B,A+B,A*B)
+```
+
+## 循环语句
+
+```{r for}
+## 通过for循环遍历向量v中的所有元素，然后返回除3余1的数
+set.seed(2024)
+a <- vector() # 保存满足条件的结果
+v <- round(rnorm(20,5,2))
+for (i in 1:length(v)){
+  if (i %% 3 ==1){ 
+    a <- append(a,v[i]) # 向向量中添加一个元素
+    print(paste("第",i,"个数据为:",v[i]))
+  }
+  ## 如果已经获取了多于4个满足条件的元素，跳出for循环
+  if(length(a)>4) break
+}
+```
+
+while循环回重复地执行程序，直到条件不为真时停止
+```{r while}
+set.seed(2024)
+a <- vector() # 保存满足条件的结果
+v <- round(rnorm(20,5,2))
+i <- 1
+while(length(a)<4){
+  if (v[i]>5) a <- append(a,v[i])
+  i=i+1
+}
+print(a)
+```
+
+# 自定义函数 
+
+编写一个计算向量标准误的函数
+```{r func}
+# 编写一个计算向量标准误的函数
+calse <- function(v){
+  se <- round(sd(v)/sqrt(length(v)),2)
+  return(se)
+}
+# 调用
+set.seed(2024)
+v1 <- rnorm(20,3,2)
+calse(v1)
+```
+
+编写一个计算向量均值、标准误、向量个数的函数
+```{r}
+# 编写一个计算向量均值、标准误、向量个数的函数
+calse <- function(v){
+  m <- round(mean(v),2)
+  se <- round(sd(v)/sqrt(length(v)),2)
+  n <- length(v)
+  return(c(均值=m,标准误=se,数量=n))
+}
+# 调用
+set.seed(2024)
+v1 <- rnorm(20,3,2)
+calse(v1)
+```
+
+输出两个向量的相关系数，并可视化散点图.  
+```{r}
+# ...参数表明一些可以传递给另一个函数的参数，常在想拓展一个函数的功能，而又不想复制原函数的整个参数列表时使用
+myfun <- function(x,y,...){
+  plot(x,y,...)
+  return(cor(x,y))
+}
+# 调用函数
+set.seed(2024)
+x1 <- rnorm(20,10,3)
+y1 <- 2*x1+rnorm(20,5,3)
+myfun(x1,y1,col="blue",pch=19,main="scatter plot")
+```
+
+# 数据处理
+## 缺失值
+
+### 查看缺失值
+
++ is.na()函数：判断数据中是否有缺失值
+
++ apply函数：并行计算
+
+```{r}
+# 导入有缺失值的数据
+data("airquality")
+head(airquality)
+# 计算每个特征包含缺失值的数量
+apply(is.na(airquality),2,sum)
+```
+
+VIM包对缺失值的情况进行可视化分析
+```{r echo=TRUE,include=FALSE}
+if(!require(VIM)) install.packages('VIM')
+library(VIM)
+```
+
+
+```{r}
+aggr(airquality,col=c("skyblue","red"),#分别为非缺失值和缺失值的颜色
+     prop=F,numbers=T, # 是否可视化所占的概率
+     gap=2)
+```
+
+### 缺失值处理
+
++ 删除缺失值
+
+```{r}
+
+```
 
