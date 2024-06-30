@@ -2,20 +2,136 @@
 title: "02数据操作"
 author: "Christal"
 date: "`r Sys.Date()`"
-output: html_document
+output: 
+  rmdformats::readthedown:
+    highlight: kate
+    toc: 3
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(cache = F,tidy = T,collapse = T)
 ```
 
-# 数据操作
 
-## dplyr
+
+# 数据并行操作
+
+## apply函数
+
+矩阵、数据框、数组等
+```{r apply函数}
+mat1 <- as.matrix(iris[,1:4])
+# 使用apply函数对每行进行计算，计算每行的和
+# apply(mat1,1,sum)
+# 使用apply函数对每列进行计算，随机选择3个
+apply(mat1,2,function(x) sample(x,3))
+# 数据框操作
+apply(iris[,1:4],2,mean)
+```
+## tapply函数：进行分组计算
+
+```{r}
+tapply(iris$Sepal.Length,iris$Species,mean)
+```
+
+
+
+
+
+## lapply函数
+
+列表、数据框等
+
+```{r lapply函数}
+lapply(iris[,1:4], mean)
+```
+
+## sapply函数
+
+可被认为是一个简化的lapply函数，通过simplify和Use.names两个参数可以让返回值为向量，而不是列表
+
+```{r}
+sapply(iris[,1:4], mean)
+```
+
+# dplyr 包
+
+```{r include=TRUE,message=FALSE}
+library(dplyr)
+```
+
+管道函数 %>% ：Ctrl+Shift+M
+```{r}
+iris %>% select(-Species) %>% apply(2,mean) %>% 
+  sort(decreasing = T) %>% barplot()
+```
+
+```{r}
+iris %>% select(-Species) %>% apply(2,mean) -> result
+result
+```
+
+```{r}
+iris %>% select(-Species) %>% summary()
+```
+
+管道操作中dot(.)的应用   
+```{r tidy=TRUE}
+cname <- c("Sepal.Length","Species")
+df <- iris %>% .[,colnames(.) %in% cname] # . 表示左边的输入iris
+head(df)
+```
+
+管道操作 |>
+```{r eval=FALSE, include=FALSE}
+iris[,1:4] |> summary()
+```
+
+```{r eval=FALSE, include=FALSE,tidy=FALSE}
+# 可以通过(_) 利用 |> 指定参数
+iris |> lm(Sepal.Length~Sepal.Width,data=_) |> summary()
+```
+
+### select函数
+
+```{r}
+# 通过管道操作选择多列数据
+iris %>% select(c("Sepal.Length","Sepal.Width")) %>% head(3)
+```
+
+```{r}
+# 选择变量名以"Petal"开始的变量 
+iris %>% select(starts_with("Petal")) %>% head(3)
+```
+
+```{r}
+# 选择变量名以"length"结尾的变量
+iris %>% select(ends_with("Length")) %>% head(3)
+```
+
+```{r}
+# 选择变量名包含"p"的变量
+iris %>% select(contains("p")) %>% head(3)
+```
+
+```{r}
+# 使用冒号(:)选择变量
+iris %>% select(Sepal.Length:Petal.Length) %>% head(3)
+```
+
+```{r}
+# 使用!选择变量
+iris %>% select(!(Species)) %>% head(3)
+```
+
+
 
 ```{r message=FALSE}
 library(dplyr)
 ```
+
+
+
 
 ### select + filter
 ```{r}
