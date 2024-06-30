@@ -9,8 +9,61 @@ output:
 
 ```{r setup, include=FALSE}
 ## Global options
-knitr::opts_chunk$set(cache = F,collapse = T,tidy = T)
+knitr::opts_chunk$set(cache = F,collapse = T,tidy = T,warning = F,message = F)
 ```
+
+# 基本操作
+
+## 包的管理
+
+### 包的下载
+```{r eval=FALSE}
+# 直接下载
+install.packages("dplyr")
+# 从Github下载
+devtools::install_github("tidyverse/dplyr")
+# 本地安装
+install.packages("D:/dplyr.zip",repos = NUll,type = "source")
+# 从BiocManage下载
+BiocManager::install("openxlsx")
+```
+
+### 加载包
+```{r eval=FALSE}
+library(ggplot2)
+```
+
+### 更新包
+```{r eval=FALSE}
+update.packages("openxlsx")
+update.packages()
+```
+
+### 删除包
+```{r eval=FALSE}
+remove.packages("ggplot2")
+```
+
+## 路径管理
+
+```{r eval=FALSE}
+# 获取当前路径
+getwd()
+# 设置当前路径
+setwd("D:/R/test")
+```
+
+## 赋值
+
+## 基本运算
+
+## 获取帮助
+```{r eval=FALSE}
+?plot
+# 根据某算法的名字或关键词，搜索哪个包能实现算法
+RSiteSearch("network")
+```
+
 
 # 基本数据结构
 

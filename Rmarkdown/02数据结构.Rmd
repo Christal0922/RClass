@@ -1,5 +1,5 @@
 ---
-title: "02 数据结构(2)"
+title: "02 数据结构"
 date: "`r Sys.Date()`"
 output:
   rmdformats::readthedown:
@@ -9,7 +9,7 @@ output:
 
 ```{r setup, include=FALSE}
 ## Global options
-knitr::opts_chunk$set(cache = FALSE,prompt = TRUE,collapse = TRUE,comment='')
+knitr::opts_chunk$set(cache = FALSE,prompt = TRUE,collapse = TRUE,comment='',message = F,warning = F)
 ```
 
 # 向量
@@ -185,6 +185,23 @@ stuscore[order(stuscore$统计学,decreasing = T),]
 ```
 
 # 因子
+
+
+函数 factor()用来创建因子，基本格式为:
+factor(x，levels，labels,ordered，...)
+
++ x:为创建因子的数据向量。
+
++ levels:指定因子的各水平值，默认为x中不重复的所有值。
+
++ labels:设置各水平名称(前缀)，与水平名称一一对应。
+
++ ordered:设置是否对因子水平排序，默认FALSE为无序因子，TRUE为有序因子。
+
++ exclude:指定有哪些水平是不需要的(设为NA);
+
++ nmax用于设定水平数的上限若不指定参数 levels，则因子水平默认按字母顺序。
+
 ## 因子的创建
 ```{r}
 b <- c("金融","地产","医药","医药","金融","医药")
@@ -205,6 +222,51 @@ as.numeric(f2)
 ```
 
 ```{r}
-b <- c("优","良","轻度污染","中度污染","重度污染","良","轻度污染")
+levels(f2)
 ```
+
++ forcats包：专门处理因子型数据
+
+```{r}
+library(forcats)
+```
+
++ gl函数：生成有规律的水平值组合因子
+
+gl(n，k,length,labels, oriered,...)
+
+n：为因子水平个数。
+
+k: 为同一因子水平连续重复次数。
+
+length:为总的元素个数，默认为n*k，若不够则自动重复。
+
+labels:设置因子水平值。
+
+ordered:设置是否为有序，默认为 FALSE。
+```{r}
+a <- tibble(
+  Name=LETTERS[1:12],
+  Sex=gl(2,3,length = 12,labels = c("男","女")),
+  Class=gl(5,2,length = 12,labels = c("甲","乙","丙","丁","戊")),
+  Score=gl(5,1,length = 12,labels = c("优","良","中","及格","不及格"))
+)
+```
+
+
++ fct_lump函数 将多个频数小的水平合并为其他
+
+```{r}
+x <- factor(rep(LETTERS[1:9], times = c(40, 10, 5, 27, 1, 1, 1, 1, 1)))
+x %>% table()
+x %>%
+  fct_lump_n(3) %>%
+  table()
+```
+
+```{r}
+fct_lump_n(a$Score,2) %>% table()
+```
+
+
 
