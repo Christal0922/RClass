@@ -54,6 +54,106 @@ lapply(iris[,1:4], mean)
 sapply(iris[,1:4], mean)
 ```
 
+# purrr 泛函式循环迭代
+
+## map函数：依次应用一元函数到一个序列的每个元素
+
+```{r eval=FALSE}
+map(.x,.f,...) 
+```
+
+
+.x 为序列
+
+.f 为要应用的一元函数
+
+... 可用于设置函数.f的其他参数
+
++ map_chr(.x,.f): 返回字符型向量
+
++ map_dbl(.x,.f): 返回实数型向量
+
++ map_dfr(.x,.f):返回数据框列表，再通过bind_rows按行合并为一个数据框
+
++ map_dfc(.x,.f):返回数据框列表，再通过bind_cols按列合并为一个数据框
+
+```{r}
+library(purrr)
+df <- iris[,1:4]
+```
+
+```{r tidy=FALSE}
+a <- map(df,mean)
+str(a)
+```
+
+```{r}
+a <- map_dbl(df,mean)
+str(a)
+```
+
+## map2函数：依次应用二元函数到两个序列的每对元素
+
+map2(.x,.y,.f,...) 
+
+.x 为序列1
+
+.y 为序列2
+
+.f 为要应用的二元函数
+
+... 可用于设置函数.f的其他参数
+
+```{r 计算BMI}
+height <- c(1.52,1.74,1.66)
+weight <- c(60,73,66)
+cal_BMI <- function(h,w) w/h^2
+map2_dbl(height,weight,cal_BMI)
+```
+
+```{r 计算BMI2}
+height <- c(1.52,1.74,1.66)
+weight <- c(60,73,66)
+map2_dbl(height,weight,~.y/.x^2)
+```
+
+## pmap函数：应用多元函数到多个序列的每组元素，可以实现对数据框逐行迭代
+
+pmap(.l,.f,...)
+
+.l 为数据框
+
+.f 为要应用的多元函数
+
+... 可用于设置函数.f的其他参数
+
+
+```{r 产生随机数}
+library(tidyverse)
+df <- tibble(
+  n=c(1,3,5),
+  mean=c(5,10,-3),
+  sd=c(1,5,10)
+)
+set.seed(123)
+pmap(df,rnorm)
+```
+
+purrr风格的公式写法
+```{r}
+pmap(df,~rnorm(..1,..2,..3))
+```
+
+```{r 按行求均值}
+pmap_dbl(df,~mean(c(...)))
+```
+
+```{r 将各行拼接在一起}
+library(stringr)
+pmap_chr(df,str_c,sep="-")
+```
+
+
 # dplyr 包
 
 ```{r include=TRUE,message=FALSE}
@@ -184,6 +284,31 @@ mtcars %>% group_by(factor(cyl)) %>%
   sample_n(size = 3,replace = F)
 ```
 
++ 分组计算线性回归模型
+```{r}
+mtcars %>% 
+  group_split(cyl) %>% 
+  map(~lm(mpg~wt,data=.x))
+```
+
+```{r 批量写出csv文件}
+dfs <- iris %>% group_split(Species)
+files <- str_c("../Input/data/",levels(iris$Species),".csv")
+walk2(dfs,files,write.csv,row.names=F)
+```
+
+首先要得到导入的全部Excel的完整路径，可以任意嵌套，只需将recurse设为TRUE
+
+用map_dfr在该路径向量上进行迭代，把read.csv应用到每个文件再按行合并
+
+用set_names()将文件路径字符向量创建为命名向量，再结合".id"将路径值作为数据来源列
+```{r 批量读入csv文件}
+files <- fs::dir_ls("../Input/data/",recurse = T,glob = "*.csv")
+df <- map_dfr(set_names(files),read.csv,.id = "来源")
+head(df)
+```
+
+
 ## 数据融合
 
 ```{r 数据准备}
@@ -236,6 +361,14 @@ iris %>% gather(key = "category",value = "Length",Sepal.Length:Petal.Width) %>% 
 library(lubridate)
 ```
 
+```{r collapse=FALSE}
+today()
+now()
+as_datetime(today())
+as_date(now())
+```
+
+
 + 通过年-月-日解析时间
 ```{r}
 ymd(c("2022-4-1","2022,5,1","20220601","2022年7月1日"))
@@ -246,6 +379,26 @@ ymd(c("2022-4-1","2022,5,1","20220601","2022年7月1日"))
 year("2022-4-1")
 ```
 
++ 创建日期时间
+```{r message=FALSE}
+d <- make_date(2020,8,27)
+d
+make_datetime(2020,8,27,21,27,15)
+# 格式化输出日期
+format(d,"%Y/%m/%d")
+# stamp函数，按给定模板格式输出日期时间
+fmt <- stamp("Created on Sunday,Jan 1,1999")
+fmt(d)
+```
+
++ 按照时间阶梯
+
+```{r}
+seq.Date(as_date("2019-02-01"),by="month",length.out = 3)
+```
+
+
++ 计算时间之间的间隔
 ```{r 计算时间之间的间隔}
 time1 <- ymd_hms("2022-2-10 14:44:30")
 time2 <- ymd_hms("2022-10-12 1:44:3")
@@ -266,7 +419,25 @@ mystr <- c("Hello","word","Hello Word!","R version 4.0.4","2024年6月30日","�
 str_length(mystr)
 ```
 
-## 字符串检测
+## 字符串检测匹配
+
++ str_detect(string,pattern,negate=FALSE)--检测是否存在匹配
+
++ str_which(string,pattern,negate=FALSE)--查找匹配的索引。
+
++ str_count(string,pattern)--计算匹配的次数。
+
++ str_locate(string,pattern)--定位匹配的位置
+
++ str_starts(string,pattern)--检测是否以pattern开头。
+
++ str_ends(string,pattern)--检测是否以pattern结尾
+
++ string:要检测的字符
+
++ pattern: 匹配的模式，可以是正则表达式。
+
++ negate: 默认为 FALSE,表示正常匹配;pattern:若为 TRUE，则为反匹配(即找不匹配的情况)。
 ```{r}
 # 检测文本中是否有空格
 str_detect(mystr," ")
@@ -275,6 +446,14 @@ str_detect(mystr," ")
 ```{r}
 # 找到指定规则的位置，检测哪些文本中有数字
 str_which(mystr,"[:digit:]")
+```
+
+```{r collapse=FALSE}
+x <- c("computer science","data science","finance","statistic","economics")
+str_detect(x,"\\s")
+str_which(x,"\\s")
+str_count(x,"o")
+str_locate(x,"s.") #.表示任意一个字符
 ```
 
 ## 字符串提取
@@ -295,7 +474,7 @@ str_extract(mystr,"[:digit:]+")
 
 ```{r}
 # 提取符合条件的内容
-str_match(mystr,"[:digit:]+")
+str_match(mystr,"\\d{4}") # 正则表达式，匹配4位数字
 ```
 
 ## 字符串替换
@@ -321,12 +500,450 @@ str_dup("Yes",3)
 ```
 
 ## 分割字符串
-```{r}
+```{r 分割字符串}
 str_split("hello world","\\s")
+```
+
+## 字符串格式化输出
+```{r 格式化输出}
+name <- "张三"
+point <- 4.8
+str_glue("姓名:{name}","绩点:{point}",.sep=";")
+```
+
+```{r}
+name <- c("张三","李四","王五")
+point <- c(4.8,2.1,1.7)
+str_glue("姓名:{name}","绩点:{point}",.sep = "\t")
+```
+
+## 正则表达式
+
+```{r}
+library(stringr)
+```
+
+```{r}
+x <- c("175.19.237.40(湖南-长沙)","114.243.12.168(北京-北京)","125.211.78.251(黑龙江-哈尔滨)")
+```
+
+```{r}
+str_extract(x,"\\d+.*\\d")
+```
+
+零宽断言匹配两个标志之间的内容
+
+左边标志的引导语法为(?<=标志),右边标志的引导语法为(?=标志)
+```{r}
+str_extract(x,"^.*(?=\\()")
+```
+
+```{r}
+str_extract(x,"(?<=\\().*(?=-)")
+```
+
+```{r}
+x=c("18级能源动力工程2班","19级统计学1班")
+```
+
+```{r}
+str_extract(x,"(?<=级).*(?=\\d)")
+```
+
+```{r}
+x <- "(1st) other (2nd)"
+```
+
+```{r}
+str_extract(x,"\\(.+\\)")
+```
+
+```{r}
+str_extract(x,"\\(.+?\\)")
+```
+
+```{r}
+x <- c("宝马X3 2016款","大众 速腾2017款","宝马3系2012款")
+```
+
+```{r}
+str_replace(x,"([a-zA-Z0-9])"," \\1")
+```
+
++ 字符串练习
+```{r}
+library(tidyverse)
+dt <- tribble(
+  ~observation,~math,~R,~Python,
+  "Tina(F)",60,72,77,
+  "Mark(M)",87,78,89,
+  "Bob(M)",77,92,99
+)
+str_view_all(dt$observation,pattern = "\\w{1,5}\\(\\w{1}\\)")
+```
+
++ 提取性别，零宽断言
+```{r}
+str_extract(dt$observation,pattern = "(?<=\\()\\w{1}(?=\\))")
+```
+
++ 提取姓名
+```{r}
+str_extract(dt$observation,pattern = "\\w+\\w")
+# 使用零宽断言
+str_extract(dt$observation,pattern = "\\w+(?=\\()")
 ```
 
 
 
+# 条件判断与控制语句
+
+## 条件判断语句
+
+```{r if}
+A <- 2
+B <- 5
+if (A>B) {
+  print(A+B)
+} else {
+  print(A*B)
+}
+```
+
+```{r ifelse}
+A <- 2
+B <- 5
+ifelse(A>B,A+B,A*B)
+```
+
+## 循环语句
+
+### for循环
+
+```{r for循环计算均值}
+df <- iris[,1:4]
+output <- vector("double",2)
+for (i in 1:4) {
+  output[i] <- mean(df[,i])
+}
+```
+
+```{r}
+x <- seq(1,10,3)
+names(x) <- LETTERS[1:4]
+results <- vector("list",length(x))
+names(results) <- names(x)
+```
+
+```{r}
+output <- vector("list",4)
+for (i in seq_along(x)){
+  output[[i]]=c(x[i]^2+1)
+}
+A <- unlist(output)
+```
 
 
+
+```{r for}
+## 通过for循环遍历向量v中的所有元素，然后返回除3余1的数
+set.seed(2024)
+a <- vector() # 保存满足条件的结果
+v <- round(rnorm(20,5,2))
+for (i in 1:length(v)){
+  if (i %% 3 ==1){ 
+    a <- append(a,v[i]) # 向向量中添加一个元素
+    print(paste("第",i,"个数据为:",v[i]))
+  }
+  ## 如果已经获取了多于4个满足条件的元素，跳出for循环
+  if(length(a)>4) break
+}
+```
+
+### while 循环
+
+while循环回重复地执行程序，直到条件不为真时停止
+```{r while}
+set.seed(2024)
+a <- vector() # 保存满足条件的结果
+v <- round(rnorm(20,5,2))
+i <- 1
+while(length(a)<4){
+  if (v[i]>5) a <- append(a,v[i])
+  i=i+1
+}
+print(a)
+```
+
+# 自定义函数
+
+语法
+```{r eval=FALSE}
+函数名 = function(输入1,...,输入n) {
+  函数体
+  return(返回值)
+}
+```
+
+## 示例：实现将百分制分数转化为五级制分数
+```{r 自定义函数实现将百分制分数转化为五级制分数}
+Score_conv <- function(score){
+    res <- NULL
+    if (score>=90) res="优秀"
+    else if(score>=80) res="良"
+    else if(score>=70) res="中"
+    else if(score>=60) res="及格"
+    else res="不及格"
+  return(res)
+}
+```
+
+
+```{r 函数测试1_map}
+scores <- c(35,67,93)
+map_chr(scores,Score_conv)
+sapply(scores,Score_conv)
+```
+
+```{r 自定义函数实现将百分制分数转化为五级制分数2}
+Score_conv2 <- function(score){
+  n <- length(score)
+  res <- vector("character",n)
+  for (i in 1:n) {
+    if (score[i]>=90) res[i]="优秀"
+    else if(score[i]>=80) res[i]="良"
+    else if(score[i]>=70) res[i]="中"
+    else if(score[i]>=60) res[i]="及格"
+    else res[i]="不及格"
+  }
+  return(res)
+}
+```
+
+```{r 函数测试2}
+scores <- c(35,67,93)
+Score_conv2(scores)
+```
+
+## 处理多个返回值
+
+```{r 计算标准误}
+Cal_sem <- function(v){
+  n <- length(v)
+  m <- round(mean(v),2)
+  s <- round(sd(v),2)
+  sem <- round(sd(v)/sqrt(n),2)
+  list(n=n,mean=m,sd=s,sem=sem)
+}
+```
+
+```{r 标准误函数测试}
+x <- c(2,6,4,9,12)
+Cal_sem(x)
+```
+
+```{r}
+y <- c(3,4,6,8,9)
+d <- data.frame(x,y)
+sapply(d, Cal_sem)
+```
+
+```{r}
+x <- c(2,6,4,9,12)
+```
+
+```{r}
+prod(x)
+cumprod(x)
+```
+
+# MySQL数据库
+```{r message=FALSE}
+library(DBI)
+library(RMySQL)
+```
+
++ 连接MySQL数据库
+```{r}
+con <- dbConnect(RMySQL::MySQL(),
+                 dbname="test",
+                 host="localhost",
+                 port=3306,
+                 user="gqq",
+                 password="gqq12345")
+```
+
++ 在数据库创建表
+```{r eval=FALSE}
+dbWriteTable(con,"iris",iris,row.names = FALSE)
+dbWriteTable(con,"mtcars",mtcars,row.names = F)
+```
++ 查看表
+```{r}
+dbListTables(con)
+```
+
+
+
++ 查询数据库
+```{r}
+dbGetQuery(con,"select * from iris limit 3")
+```
++ 查看表结构
+```{r}
+dbGetQuery(con,"desc iris")
+```
++ 数据表引用
+```{r}
+df <- tbl(con,"iris")
+head(df)
+```
++ 数据表计算
+```{r dplyr}
+df %>% group_by(Species) %>% 
+  summarise(n=n(),across(1:4,mean,.names = "means_{.col}"))
+```
+
+```{r sql}
+dbGetQuery(con,"select Species,count(Species) as n from iris group by Species")
+```
+
++ 关闭R与MySQL的连接
+```{r}
+dbDisconnect(con)
+```
+
+# 数据连接
+
+```{r 随机取样}
+set.seed(123)
+df <- data.frame(carname=rownames(mtcars),mtcars)
+df1 <- sample_n(df,size = 5,replace = F)
+df2 <- sample_n(df,size = 3,replace = F)
+```
+
+```{r 合并行}
+df3 <- bind_rows(df1,df2[3,])
+df3 <- df3[,c(1,6)]
+df2 <- df2[,1:2]
+```
+
+## 根据值匹配合并数据框
+
++ 左连接
+```{r 左连接}
+df3 %>% left_join(df2,by="carname")
+```
+
++ 右连接
+```{r 右连接}
+df2 %>% right_join(df3,by="carname")
+```
+
++ 全连接
+```{r 全连接}
+df3 %>% full_join(df2,by="carname")
+```
+
++ 内连接
+```{r 内连接}
+df3 %>% inner_join(df2,by="carname")
+```
+
++ 半连接, 保留x表中与y表中的行相匹配的所有行，即根据y表中有匹配的部分来筛选x表中的行
+```{r 半连接}
+df3 %>% semi_join(df2,by="carname")
+```
+
++ 反连接, 删掉x表中与y表中的行相匹配的所有行，即根据y表中没有匹配的部分来筛选x表中的行
+```{r 反连接}
+df3 %>% anti_join(df2,by="carname")
+```
+
+## 长表和宽表的转换
+
+### 宽表变长表
+
+```{r}
+dt <- tribble(
+  ~observation,~math,~R,~Python,
+  "Tina(F)",60,72,77,
+  "Mark(M)",87,78,89,
+  "Bob(M)",77,92,99
+)
+```
+
++ 正则表达式的分组捕获功能
+```{r}
+dt %>% 
+  extract(observation,into = c("name","sex"),regex="(.*)\\((.*)\\)")
+```
+
+```{r 正则表达式方法2}
+dt2 <- dt %>% 
+  extract(observation,into = c("name","sex"),regex="(\\w+)\\((\\w)\\)")
+```
++ 合并列
+```{r 合并列}
+dt3 <- dt2 %>% unite(test,name,sex,sep = "_",remove = T)
+```
++ 拆分列
+```{r}
+dt3 %>% separate(test,into = c("name","sex"),sep = "\\_")
+```
+
+```{r}
+dt %>% separate(observation,into = c("name","sex"),sep = "[\\(\\)]")
+```
+
+```{r}
+library(tidyverse)
+dt %>% pivot_longer(-observation,
+                    names_to ="subject",
+                    values_to = "score") %>% 
+  separate(observation,into = c("stuname","sex"))
+```
+
+```{r}
+dt <- tribble(
+  ~observation,~math_score,~R_score,~math_level,~R_level,
+  "Tina",60,72,"D","C",
+  "Mark",87,78,"B","C",
+  "Bob",77,92,"C","A"
+)
+```
+
+```{r}
+library(tidyverse)
+dt2 <- dt %>% pivot_longer(-observation,
+                    names_to = c("subject",".value"),
+                    names_sep = "_") 
+```
+
+### 长表变宽表
+
+```{r}
+dt2  %>% 
+  pivot_wider(names_from = subject,values_from = c(score,level),values_fill = NA)
+```
+
++ 示例2
+```{r}
+df <- tibble(
+  x=1:6,
+  y=c("A","A","B","B","C","C"),
+  z=c(2.13,3.65,1.88,2.30,6.55,4.21)
+)
+```
+
+```{r}
+df <- df %>% group_by(y) %>% 
+  mutate(n=row_number()) 
+df
+```
+
+```{r}
+df %>% select(-x) %>% 
+  pivot_wider(names_from = y,values_from = z)
+```
 

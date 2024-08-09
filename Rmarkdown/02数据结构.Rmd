@@ -225,7 +225,7 @@ as.numeric(f2)
 levels(f2)
 ```
 
-+ forcats包：专门处理因子型数据
+## forcats包：专门处理因子型数据
 
 ```{r}
 library(forcats)
@@ -267,6 +267,111 @@ x %>%
 ```{r}
 fct_lump_n(a$Score,2) %>% table()
 ```
+
+### 图形按照因子的频数降序排列
+```{r}
+library(ggplot2)
+ggplot(diamonds,aes(fct_infreq(cut)))+
+  geom_bar()
+```
+
+# 时间序列
+
+## ts对象
+
+### 年度数据
+```{r}
+a <- ts(data = 1:42,start = 1978,end= 2020)
+```
+
++ 可以用as.vector把时间序列的数据转换成普通向量
+```{r}
+as.vector(a)
+class(as.vector(a))
+```
+
+### 季度数据
+
+```{r}
+a <- ts(data = 1:10,start = 2010,frequency = 4)
+a
+```
+
+### 月度数据
+```{r}
+a <- ts(data = 1:24,start = 2010,frequency = 12)
+a
+```
+
++ 周度数据,frequency=52
+
++ 日度数据,frequency =365
+
+### 时间序列数据示例
+
+美国泛美航空公司1949-1960的国际航班订票数的月度数据（单位：千人），12年144个月。
+
+```{r}
+data("AirPassengers")
+attributes(AirPassengers)
+```
+
+用`start()`求时间序列的开始点，`end()`求时间序列的结束点，`frequency`求采样频率
+
+```{r}
+start(AirPassengers)
+end(AirPassengers)
+```
+
+`aggregate()`函数可以把月度数据加总成年数据。
+```{r}
+AP.year <- aggregate(AirPassengers,FUN = sum)
+AP.year
+```
+
+`time()`函数对ts类型数据返回序列中的每个时间点的时间
+```{r}
+time(AirPassengers)
+```
+
+`cycle()`函数对月度数据返回序列每个时间点所在的月份，结果是和原序列时间点相同的一个时间序列。
+
+```{r}
+cycle(AirPassengers)
+```
+
+`window()`函数取出时间序列的一段，如果指定`frequency=TRUE`还可以仅取出某个月（季度).
+```{r}
+window(AirPassengers,start=c(1949,1),frequency=T)
+```
+
+## xts类型
+
+```{r message=FALSE}
+library(xts)
+library(lubridate)
+```
+
+```{r}
+xts(c(5,5,4,6,4,3,3,3,4,5,5,4),make_date(2018,1,1)+ddays(0:11))
+```
+
+```{r}
+ym <- ts(
+  c(9, 6, 3, 5, 4, 8, 2, 5, 8, 4, 6, 3,
+    2, 2, 6, 4, 1, 4, 2, 1, 8, 9, 4, 6), 
+  frequency=12, start=c(2001,1))
+as.xts(ym)
+```
+
+有了xts类型的变量x后， 可以用coredata(x)返回x的不包含时间的纯数据； 用index(x)返回x的时间标签。 这两个函数很有用。
+```{r eval=FALSE, include=FALSE}
+coredata(ym)
+index(ym)
+ym[1]
+```
+
+
 
 
 
