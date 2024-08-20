@@ -1,0 +1,65 @@
+---
+title: "Quarto入门2"
+author: "兔子也要有脾气"
+format: revealjs
+---
+
+# 用Quarto的revealjs格式输出制作演示
+
+## 幻灯片结构
+
+-   用二级标题标志一个页面开始
+-   用一级标题制作单独的分节页面
+-   用三个或三个以上减号标志没有标题的页面开始
+-   每个页面一般用markdown列表显示若干个项目
+
+## 幻灯片编辑和编译
+
+-   用RStudio编辑内容
+-   用RStudio的Render按钮生成结果
+
+## Markdown basics
+
+*italics*, **bold**, ***bold italics***
+
+superscript^2^ / subscript~2~
+
+~~strikethrough~~
+
+`verbatim code`
+
+> Blockquote
+
+------------------------------------------------------------------------
+
+## 图片
+
+![测试](https://s11.ax1x.com/2022/11/29/zdFLes.png){fig-alt="兔子"}
+
+------------------------------------------------------------------------
+
+## 数学公式
+
+$$\begin{aligned}
+  \sum_{k=1}^n k^2 =& \frac{1}{6} n (n+1) (2n+1) , \\
+  \sum_{k=1}^n k^3 =& \left(\frac{1}{2} n (n+1) \right)^2 .
+\end{aligned}$$
+
+## 代码段和结果
+
+```{r}
+#| echo: true
+x <- 1:10
+y <- x^2
+plot(x, y)
+```
+
+## 流程图
+
+```{mermaid}
+flowchart LR
+  A[Hard edge] --> B(Round edge)
+  B --> C{Decision}
+  C --> D[Result one]
+  C --> E[Result two]
+```
