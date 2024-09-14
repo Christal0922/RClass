@@ -1,0 +1,108 @@
+---
+title: "计算器"
+format: dashboard
+server: shiny
+---
+
+```{r}
+#| context: setup
+library(ggplot2)
+library(shiny)
+```
+
+
+
+
+
+
+# 四则运算
+
+## Row
+
+### {.sidebar width="300px"}
+
+```{r}
+numericInput("num1","请输入数字1:",0)
+numericInput("num2","请输入数字2:",0)
+selectInput("operation", "选择运算:",
+choices = c("加法" = "+", "减法" = "-", "乘法" = "*", "除法" = "/"))
+actionButton("calculate", "计算")
+```
+
+### Column{.tabset}
+
+#### 输入检测
+```{r}
+textOutput("test1")
+textOutput("test2")
+```
+
+```{r}
+#| context: server
+output$test1 <- renderText({
+  paste("你输入的数字1是:",input$num1)
+})
+
+output$test2 <- renderText({
+  paste("你输入的数字2是:",input$num2)
+})
+```
+
+#### 计算
+```{r}
+textOutput("result")
+```
+
+```{r}
+#| context: server
+  result <- eventReactive(input$calculate, {
+    num1 <- input$num1
+    num2 <- input$num2
+    op <- input$operation
+    
+    # 根据选择的运算符进行计算
+    calc_result <- switch(op,
+                    "+" = num1 + num2,
+                    "-" = num1 - num2,
+                    "*" = num1 * num2,
+                    "/" = ifelse(num2 != 0, round(num1 / num2,2), "除数不能为零"))
+    calc_result
+  })
+  
+  # 输出结果
+  output$result <- renderText({
+    paste("结果是:", result())
+  })
+```
+
+# 绘图
+
+## {.sidebar width="300px"}
+```{r}
+sliderInput("n","选择数据点的数量:",
+            min = 10,
+            max = 100,
+            value = 10,
+            step = 10)
+```
+
+## Column {.tabset}
+### 散点图
+```{r}
+plotOutput("p")
+```
+
+```{r}
+#| context: server
+output$p <- renderPlot({
+  set.seed(2024)
+  data1 <- data.frame(
+    x1=rnorm(input$n,10,3),
+    y1=rnorm(input$n,3,1)
+  )
+  
+  ggplot(data1,aes(x1,y1))+
+    geom_point()
+})
+```
+

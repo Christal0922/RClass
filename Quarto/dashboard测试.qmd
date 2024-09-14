@@ -1,0 +1,121 @@
+---
+title: "兔子也要有脾气的主页"
+format: 
+  dashboard:
+    logo: images/兔子.png
+    nav-buttons:
+      - icon: gitlab
+        href: https://baidu.com/
+---
+
+# 第一页(按行填充)
+## Row {height=70%}
+```{r}
+#| title: "钻石价格"
+library(ggplot2)
+ggplot(diamonds,aes(x=price,fill = color))+
+  geom_density(alpha=0.6)
+```
+
+## Row {height=30%}
+
+```{r}
+#| title: "钻石颜色"
+library(ggplot2)
+ggplot(diamonds,aes(x=color,fill = after_stat(count)))+
+  geom_bar(stat = "count")+
+  coord_flip()
+```
+
+# 第二页(按列填充) {orientation="columns" scrolling="true"}
+
+## Column {width=60%}
+```{r}
+#| title: "钻石价格"
+library(ggplot2)
+ggplot(diamonds,aes(x=price,fill = color))+
+  geom_density(alpha=0.6)
+```
+
+
+## Column {width=40%}
+```{r}
+#| title: "钻石颜色"
+library(ggplot2)
+ggplot(diamonds,aes(x=color,fill = after_stat(count)))+
+  geom_bar(stat = "count")+
+  coord_flip()
+```
+
+# 标签集
+
+## Row {.tabset}
+```{r}
+#| title: "钻石价格"
+library(ggplot2)
+ggplot(diamonds,aes(x=price,fill = color))+
+  geom_density(alpha=0.6)
+```
+
+```{r}
+#| title: "钻石颜色"
+library(ggplot2)
+ggplot(diamonds,aes(x=color,fill = after_stat(count)))+
+  geom_bar(stat = "count")+
+  coord_flip()
+```
+
+::: {.card title="文字说明"}
+这是一段文字 
+:::
+
+# 标签集2(标签嵌套)
+
+## Row {.tabset}
+
+### 钻石信息
+```{r}
+#| title: "钻石价格"
+library(ggplot2)
+ggplot(diamonds,aes(x=price,fill = color))+
+  geom_density(alpha=0.6)
+```
+
+```{r}
+#| title: "钻石颜色"
+library(ggplot2)
+ggplot(diamonds,aes(x=color,fill = after_stat(count)))+
+  geom_bar(stat = "count")+
+  coord_flip()
+```
+
+::: {.card title="文字说明"}
+这是一段文字 
+:::
+
+### Data
+```{r}
+knitr::kable(diamonds[1:15,])
+```
+
+# 显示选项
+## Row 
+
+### Column
+```{r}
+#| title: "原始图像"
+library(ggplot2)
+ggplot(diamonds,aes(x=price,fill = color))+
+  geom_density(alpha=0.6)
+```
+
+### Column{.tabset}
+```{r}
+#| title: "填充设置"
+#| padding: 0
+#| fig-cap: "padding 自定义填充"
+library(ggplot2)
+ggplot(diamonds,aes(x=price,fill = color))+
+  geom_density(alpha=0.6)
+```
+

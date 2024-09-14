@@ -1,0 +1,265 @@
+---
+title: "ggplot2案例收集"
+date-modified: last-modified
+date-format: iso
+highlight-style: pygments
+number-sections: true
+format: 
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: left
+    toc-title: Contents
+    code-fold: show
+    code-link: true
+editor: visual
+execute:
+  warning: false
+  cache: true
+crossref: 
+  fig-title: 图 #图的默认标签（默认是"Figure"）
+  fig-prefix: 图 # 图的默认引用样式（默认是"Figure"）
+theme:
+  light: flatly
+  dark: darkly
+---
+
+# 准备
+```{r}
+library(showtext)
+showtext_auto(enable=T)
+font_add("STKaiti","/Library/Fonts/stkaiti.ttf")
+```
+
+
+
+```{r}
+library(dplyr)
+library(ggplot2)
+```
+
+
+```{r}
+mytheme <- theme(
+    text = element_text(size = 16,
+                        family = "STKaiti"),
+    axis.title = element_text(size = 20)
+  )
+```
+
+
+
+# 幸福指数数据集
+
+## 数据准备
+```{r 数据读入}
+load("../Input/collected_data/World_happines_Data.RData")
+
+```
+
+```{r 数据预处理}
+happy_data2 <- happy_data %>% 
+  rename(
+    happiness = `Life Ladder`,
+    wealth = `Log GDP per capita`,
+    country = `Country name`,
+    choise = `Freedom to make life choices`,
+    life_expectancy = `Healthy life expectancy at birth`
+  )
+head(happy_data2)
+```
+
+## 数据可视化
+### 幸福指数与财富的关系
+```{r}
+ggplot(happy_data2,aes(x=wealth,y=happiness))+
+  geom_point()
+```
+
+### plotly交互式图形鉴别异常点
+```{r}
+#| eval: false
+library(plotly)
+pic <- ggplot(happy_data2,aes(x=wealth,y=happiness,group=country))+
+  geom_point()
+ggplotly(pic)
+```
+
+
+
+### 特定国家,随着时间变化
+```{r}
+happy_data3 <- happy_data2 %>% 
+  filter(country %in% c("United States","Germany","India","Venezuela",
+                        "China"))
+```
+
+```{r}
+pic <- ggplot(happy_data3,aes(x=year,y=wealth,color=country))+
+  geom_point()
+```
+
+```{r}
+#| eval: false
+ggplotly(pic)
+```
+
+
+### 评估线性回归
+
+```{r}
+a <- pic+geom_smooth()
+b <- pic+geom_smooth(method = "lm")
+```
+
+```{r}
+#| warning: false
+#| message: false
+#| eval: false
+library(patchwork)
+a+b
+```
+
+### 数据内部的聚类信息，预期寿命与幸福指数
+```{r}
+ggplot(happy_data3,aes(x=life_expectancy,y=happiness))+
+  geom_point()+
+  geom_smooth(method = "lm")+
+  stat_ellipse()
+```
+
+```{r}
+ggplot(happy_data3,aes(x=life_expectancy,y=happiness,colour = country))+
+  geom_point()+
+  geom_smooth(method = "lm")+
+  stat_ellipse()
+```
+
+
+### 多变量分析(Multivariate Exploratory Analysis,MEA)
+
+```{r}
+set.seed(1)
+pic <- ggplot(happy_data3,aes(x=life_expectancy,y=happiness,shape = country,size = wealth,colour = `Perceptions of corruption`))+
+  geom_point()
+pic
+```
+
+```{r}
+library(ggrepel)
+pic+ggrepel::geom_label_repel(aes(label=year),size=1,max.overlaps = 100)
+```
+
+#### 分面
+
+数据处理
+```{r}
+happy_data4 <- happy_data3 %>% mutate(
+  `Social support`=case_when(
+    `Social support`>median(`Social support`,na.rm=T) ~ "have loved ones",
+    TRUE ~ "lonely"
+  )
+) %>% 
+  mutate(Generosity=case_when(
+    Generosity>median(Generosity,na.rm=T)~"generous",
+    TRUE~ "greedy"
+  ))
+
+```
+
+```{r}
+set.seed(1)
+pic2 <- ggplot(happy_data4,
+               aes(x=life_expectancy,
+                   y=happiness,
+                   shape = country,
+                   size = wealth,
+                   colour = `Perceptions of corruption`))+
+  facet_grid(Generosity~`Social support`)+
+  geom_point(position = position_jitter(width = 0.5,height = 0.5))
+pic2
+```
+
+```{r}
+pic2+ggrepel::geom_label_repel(
+  aes(label=year),size=1,max.overlaps = 100
+)
+```
+
+```{r}
+pic3 <- pic2+
+  labs(
+    title = "世界幸福指数: 2005-2023",
+    subtitle = "5个国家为例",
+    caption = "https://worldhappiness.report/data/",
+    x = "预期寿命",
+    y = "幸福指数"
+  )+
+  scale_shape_manual(values = c(15,16,17,18,14))+
+  theme(
+    text = element_text(family = "STKaiti"),
+    legend.position = "left",
+    plot.title = element_text(color = "blue",size = 15),
+    plot.subtitle = element_text(face = "bold"),
+    plot.caption = element_text(face = "italic"),
+    axis.title = element_text(color = "blue",size = 14))+
+  scale_x_continuous(breaks = c(55,60,65,70,75))+
+    scale_y_continuous(breaks = seq(2,8,1))+
+    geom_hline(
+      yintercept = median(happy_data4$happiness,na.rm = T),
+      linetype="dashed",
+      color="green"
+    )
+
+pic3
+```
+
+```{r}
+library(ggpubr)
+pic3+ggrepel::geom_label_repel(
+  aes(label=year),size=1,max.overlaps = 100
+)+ggpubr::theme_cleveland()
+```
+
+# 鸢尾花数据集(iris)
+
+## 数据准备
+```{r}
+knitr::kable(str(iris))
+```
+
+```{r}
+knitr::kable(iris[1:20,])
+```
+
+### 散点图 -花萼长度和宽度
+
+```{r}
+ggplot(iris,aes(x=Sepal.Length,y=Sepal.Width))+
+  geom_point()+
+  facet_wrap(~Species)+
+  geom_smooth(method = "lm",se=F,color="red")+
+  labs(x="花萼长度(cm)",y="花萼宽度(cm)",
+       title = "鸢尾花不同品种的花萼长宽比较")+
+  theme_bw()
+```
+
+
+```{r}
+library(ggplot2)
+ggplot(iris,aes(x=Sepal.Length,y=Sepal.Width))+geom_point()+
+  facet_wrap(~Species)+
+  geom_smooth(method = "lm",se=F,color="red")+
+    labs(x="花萼长度(cm)",y="花萼宽度(cm)",
+       title = "鸢尾花不同品种的花萼长宽比较")+theme_bw()+
+  theme(text = element_text(size = 18,family = "STKaiti"))
+  
+```
+
+## 条形图
+```{r}
+ggplot(diamonds,aes(x=color,fill=after_stat(count)))+
+  geom_bar(stat = "count")+
+  scale_fill_viridis_b()
+```
+

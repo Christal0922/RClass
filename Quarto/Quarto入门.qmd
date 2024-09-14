@@ -28,21 +28,21 @@ theme:
 
 Quarto是POSIT(原RStudio)团队开发的一个开源软件， 可以将包含R、Python、Julia、Observable JS源程序的markdown文件产生运行结果后转换为各种输出格式， 这些源文件可以是普通的包含程序代码的markdown文件(扩展名为.qmd)， 也可以是Jupyter笔记本文件(扩展名为.ipynb)。 支持**HTML、MS Word、LaTeX PDF、ePub、网站、幻灯片**等多种输出格式。@sec-introduction
 
-Quarto 是一个建立在 Pandoc 上的开源科技出版系统。
+Quarto这样的软件的一个重要目的， 是实现"文学化编程"（literate programming）， 并支持可重复科研。 文学化编程的意思是， 将论文和论文用到的计算机程序写在同一个源代码中， 经过一个运行、编译过程， 将计算机程序运行产生结果， 将**论文内容、源程序、程序产生的文字、表格、图形结果**有机地结合成一个最终论文， 可以用多种形式保存，如HTML、Word、PDF等。 用这种办法可以将研究过程很好地记录下来并可以很容易地重现研究结果， 所以可以支持可重复科研。
 
-可以基于 Python、R、Julia 和 Observable 创建动态内容。
+-   Quarto 是一个建立在 Pandoc 上的开源科技出版系统。
 
-以纯文本 markdown 或 Jupyter 笔记本的形式编写文档。
+-   可以基于 Python、R、Julia 和 Observable 创建动态内容。
 
-以 HTML、PDF、MS Word、ePub 等格式发布高质量的文章、报告、简报、网站、博客和书籍。
+-   以纯文本 markdown 或 Jupyter 笔记本的形式编写文档。
 
-用科学的 markdown 进行创作，包括方程、引文、交叉引用、图板、呼号、高级布局等等。
+-   以 HTML、PDF、MS Word、ePub 等格式发布高质量的文章、报告、简报、网站、博客和书籍。
 
-[庄闪闪CSDN](https://blog.csdn.net/qq_37379316/article/details/133670879?spm=1001.2014.3001.5502)
+-   用科学的 markdown 进行创作，包括方程、引文、交叉引用、图板、呼号、高级布局等等。
 
 ## 学习资源
 
-[quarto官方学习指南](https://quarto.org/docs/output-formats/html-basics.html)
+[quarto官网](https://quarto.org/)
 
 [quarto格式文件-北京大学数学学院李东风](https://www.math.pku.edu.cn/teachers/lidf/docs/Rbook/html/_Rbook/quarto.html)
 
@@ -50,7 +50,7 @@ Quarto 是一个建立在 Pandoc 上的开源科技出版系统。
 
 [基于R语言的Quarto文档教程](https://quarto.org/docs/get-started/hello/rstudio.html)
 
-Quarto这样的软件的一个重要目的， 是实现"文学化编程"（literate programming）， 并支持可重复科研。 文学化编程的意思是， 将论文和论文用到的计算机程序写在同一个源代码中， 经过一个运行、编译过程， 将计算机程序运行产生结果， 将**论文内容、源程序、程序产生的文字、表格、图形结果**有机地结合成一个最终论文， 可以用多种形式保存，如HTML、Word、PDF等。 用这种办法可以将研究过程很好地记录下来并可以很容易地重现研究结果， 所以可以支持可重复科研。
+[庄闪闪CSDN](https://blog.csdn.net/qq_37379316/article/details/133670879?spm=1001.2014.3001.5502)
 
 ## 自动生成日期
 
@@ -78,7 +78,7 @@ quarto_render('Quarto入门.qmd',output_format="pdf")
 
 -   number-sections:true 自动生成章节的编号并显示编号
 
-- toc-expand：在一开始目录显示到多少级，默认显示到一级标题。当向下浏览内容时目录会自动展开到toc-depth所设置的层级。设置为true时，则在一开始就展开所有目录；设置为false则在一开始折叠所有目录。
+-   toc-expand：在一开始目录显示到多少级，默认显示到一级标题。当向下浏览内容时目录会自动展开到toc-depth所设置的层级。设置为true时，则在一开始就展开所有目录；设置为false则在一开始折叠所有目录。
 
 #### pdf
 

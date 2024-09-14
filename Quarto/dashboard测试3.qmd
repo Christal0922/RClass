@@ -1,0 +1,62 @@
+---
+title: "dashboard测试3"
+format: dashboard
+server: shiny
+---
+
+```{r}
+#| context: setup
+library(ggplot2)
+library(shiny)
+dataset <- diamonds
+```
+
+# 侧边栏
+
+## Row
+
+### {.sidebar width="300px"}
+
+Sidebar content
+```{r}
+sliderInput('sampleSize', 'Sample Size', 
+            min=1, max=nrow(dataset),
+            value=min(1000, nrow(dataset)), 
+            step=500, round=0)
+br()
+checkboxInput('jitter', 'Jitter', value = TRUE)
+checkboxInput('smooth', 'Smooth', value = TRUE)
+```
+
+
+### Column
+```{r}
+library(ggplot2)
+ggplot(mpg,aes(displ,cty))+
+  geom_point()
+```
+
+## Row
+```{r}
+knitr::kable(mpg[1:15,])
+```
+
+# 工具栏
+
+## {.toolbar}
+
+```{r}
+#| content: card-toolbar
+#| title: "钻石数据"
+selectInput("x","X",names(dataset))
+selectInput("y","Y",names(dataset))
+```
+
+
+## Row
+```{r}
+library(ggplot2)
+ggplot(mpg,aes(x=displ,y=cty))+
+  geom_point()
+```
+

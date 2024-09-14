@@ -1,0 +1,33 @@
+---
+title: "夏季奥运会"
+date-modified: last-modified
+date-format: iso
+highlight-style: pygments
+number-sections: true
+format: 
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: left
+    toc-title: Contents
+    code-fold: show
+editor: visual
+execute:
+  warning: false
+  cache: false
+crossref: 
+  fig-title: 图 #图的默认标签（默认是"Figure"）
+  fig-prefix: 图 # 图的默认引用样式（默认是"Figure"）
+theme:
+  light: flatly
+  dark: darkly
+---
+
+## 数据准备
+```{r}
+#| output: false
+load("/Users/Project/R/RClass/Input/collected_data/summer_Olympic_2024.RData")
+```
+
+
+

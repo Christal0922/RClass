@@ -1,0 +1,184 @@
+---
+title: "dashboard测试2"
+author: "兔子也要有脾气"
+format: 
+  dashboard:
+    logo: images/兔子.png
+---
+
+# 数据操作
+
+## Row {.tabset}
+### 图片 
+
+#### Column
+```{r}
+#| fig-width: 10
+#| fig-height: 8
+#| height: 65%
+plot(cars)
+```
+
+```{r}
+#| fig-width: 10
+#| fig-height: 8
+#| height: 35%
+plot(cars)
+``` 
+
+#### Column
+```{r}
+#| fig-width: 5
+#| fig-height: 4
+plot(pressure)
+```
+
+   
+```{r}
+#| fig-width: 5
+#| fig-height: 4
+plot(airmiles)
+```
+
+### 数据(Kable)
+```{r}
+knitr::kable(mtcars)
+```
+
+### 数据(DT)
+```{r}
+library(DT)
+datatable(mtcars)
+```
+
+# 值框(Value Boxes)
+
+## Row {height=50%}
+```{r}
+#| content: valuebox
+#| title: "trash//danger"
+list(
+  icon = "trash",
+  color = "danger",
+  value = 2500
+)
+```
+
+```{r}
+#| content: valuebox
+#| title: "file-medical//primary"
+
+list(
+  icon = "file-medical",
+  color = "primary",
+  value = 1
+)
+```
+
+```{r}
+#| content: valuebox
+#| title: "archive//dark"
+list(
+  icon = "archive",
+  color = "dark",
+  value = 2500
+)
+```
+
+```{r}
+#| content: valuebox
+#| title: "clipboard-data-fill//light"
+
+list(
+  icon = "clipboard-data-fill",
+  color = "light",
+  value = 1
+)
+```
+## Row {height="25%"}
+```{r}
+#| content: valuebox
+#| title: "bar-chart-fill//secondary"
+
+list(
+  icon = "bar-chart-fill",
+  color = "secondary",
+  value = 1
+)
+```
+
+```{r}
+#| content: valuebox
+#| title: "bar-chart//success"
+
+list(
+  icon = "bar-chart",
+  color = "success",
+  value = 1
+)
+```
+
+```{r}
+#| content: valuebox
+#| title: "clipboard2-pulse//info"
+
+list(
+  icon = "clipboard2-pulse",
+  color = "info",
+  value = 2
+)
+```
+
+```{r}
+#| content: valuebox
+#| title: "calendar-week//warning"
+
+list(
+  icon = "calendar-week",
+  color = "warning",
+  value = 3
+)
+```
+## Row {height="25%"}
+
+### Column
+::: {.valuebox icon="pencil" color="blue"}
+
+```{r}
+Articles <- 2
+```
+
+`{r} Articles` per day
+:::
+
+
+### Column
+::: {.card title="文字说明"}
+[icons](https://icons.getbootstrap.com/)
+:::
+
+# 值框示例
+## Row {height=25%}
+
+::: {.valuebox icon="pencil" color="blue"}
+
+```{r}
+Articles <- 2
+```
+
+`{r} Articles` per day
+:::
+
+## Row {height=75%}
+```{r}
+#| title: "钻石"
+#| layout-ncol: 2
+#| fig-subcap: 
+#|        - "城市路段耗油量"
+#|        - "高速公路耗油量"
+library(ggplot2)
+ggplot(mpg,aes(x=displ,y=cty))+
+  geom_point()
+ggplot(mpg,aes(x=displ,y=hwy))+
+  geom_point()
+```

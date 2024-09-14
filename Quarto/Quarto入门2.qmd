@@ -1,7 +1,9 @@
 ---
 title: "Quarto入门2"
 author: "兔子也要有脾气"
-format: revealjs
+format: 
+  revealjs:
+    chalkboard: true
 ---
 
 # 用Quarto的revealjs格式输出制作演示

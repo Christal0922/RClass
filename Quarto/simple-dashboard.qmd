@@ -1,0 +1,122 @@
+---
+title: "simple-dashboard"
+format: 
+  dashboard:
+    orientation: rows
+---
+
+# Page 1
+
+## Row
+
+这是一些内容介绍
+
+## Row
+
+### Column
+```{r}
+#| title: Cars Plot
+plot(cars)
+```
+
+```{r}
+#| title: MT Cars Plot
+plot(mtcars)
+```
+
+### Column
+```{r}
+plot(1:5,1:5)
+```
+
+# Page 2
+```{r}
+library(ggplot2)
+ggplot(diamonds,aes(x=price))+
+  geom_histogram(bins = 30)
+```
+
+# Page 3
+
+{{<video https://www.youtube.com/watch?v=_VGJIPRGTy4 >}}
+
+# Page 4
+
+## Row
+```{r}
+#| title: Cars
+plot(cars)
+```
+
+## Row
+
+### Column
+```{r}
+#| component: valuebox
+list(
+  title="人口",
+  value=1600000000,
+  color="red",
+  icon="activity"
+)
+```
+
+```{r}
+#| component: valuebox
+list(
+  title="My value",
+  value=50,
+  color="blue",
+  icon="envelope"
+)
+```
+
+### Column
+
+Waiting
+
+## Row
+
+References: [jjallaire](https://github.com/jjallaire/diamonds-dashboard)
+
+# Page 5
+
+## Row {height="20%"}
+
+```{r}
+#| content: valuebox
+#| title: "测试1"
+
+list(
+  icon = "file-medical",
+  color = "primary",
+  value = 1
+)
+```
+
+```{r}
+#| content: valuebox
+#| title: "测试2"
+
+list(
+  icon = "clipboard2-pulse",
+  color = "primary",
+  value = 2
+)
+```
+
+```{r}
+#| content: valuebox
+#| title: "测试3"
+
+list(
+  icon = "calendar-week",
+  color = "primary",
+  value = 3
+)
+```
+
+
+
+
+

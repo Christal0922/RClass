@@ -1,0 +1,369 @@
+---
+title: "R语言模拟题"
+format: 
+  html: 
+    toc: true
+    toc-depth: 3
+    toc-location: left
+    code-fold: show
+editor: visual
+execute:
+  warning: false
+theme:
+  light: flatly
+  dark: darkly
+---
+
+  
+```{r 字体设置}
+#| message: false
+library(showtext)
+showtext_auto(enable=T)
+font_add("STKaiti","/Library/Fonts/stkaiti.ttf")
+```
+
+
+# R语言基础操作题
+
+## 2.1
+
+(1)定义向量Margin用于存储毛利润数据，并显示。
+
+```{r}
+Margin <- c(24265,35249,34491,45159)
+Margin
+```
+
+(2)定义向量Quarter用于存储季度信息，并显示。
+
+```{r}
+Quarter <- c("Quarter1","Quarter2","Quarter3","Quarter4")
+Quarter
+```
+
+(3)根据Margin和Quarter创建数据框mydata, 并显示。
+```{r}
+mydata <- data.frame(
+  Margin,Quarter
+)
+mydata
+```
+
+(4)通过数据框索引输出第3行第1列数据，显示代码并输出结果。
+
+```{r}
+mydata[3,1]
+```
+
+(5)计算第4季度和第3季度之间的毛利润变化值，并显示。
+```{r}
+mydata[4,1]-mydata[3,1]
+```
+
+## 2.2
+
+2.使用rnorm函数从均值为50、标准差为15的正态总体中产生20个随机数（设置随机种子数为2022），并回答以下问题。
+(1)定义向量A用于存储生成的20个随机数。
+```{r}
+set.seed(2022)
+A <- rnorm(n=20,mean=50,sd=15)
+A
+```
+
+(2)获取向量A中大于50的元素构成的子向量B,并显示。
+```{r}
+B <- A[A>50]
+B
+```
+
+(3)获取向量A的最大值和最小值，并显示。
+```{r}
+cat("最大值为:",max(A),"\n")
+min(A)
+range(A)
+```
+
+(4)使用cut函数将向量A按照分段节点(0,20,40,60,80)进行分段生成新向量C。
+```{r}
+A
+```
+
+
+```{r}
+C <- cut(A,breaks = c(0,20,40,60,80),right = F)
+C
+```
+
+
+(5)使用table函数对各段结果进行计数并显示。
+```{r}
+table(C)
+```
+
+## 3
+
+3.构造下列R语言结构，并显示。
+
+(1)生成序列3,6,9,12,...,60。 
+```{r}
+seq(from=3,to=60,by=3)
+```
+
+(2)生成序列 1,0,3,0,5,0,...,59,0。
+```{r}
+seq(1,60,1)*c(1,0)
+```
+
+
+
+(3)构造如下所示2╳4矩阵mat1，并显示。
+```{r}
+mat1 <- matrix(
+  data = 1:8,
+  nrow = 2,
+  ncol = 4,
+  byrow = TRUE,
+  dimnames = list(
+    c("问题1","问题2"),
+    c("大一","大二","大三","大四")
+  )
+)
+mat1
+```
+
+```{r}
+mat1 <- matrix(
+  data = 1:8,
+  nrow = 2,
+  ncol = 4,
+  byrow = TRUE)
+# 指定行名
+rownames(mat1) <- c("问题1","问题2")
+# 指定列名
+colnames(mat1) <- c("大一","大二","大三","大四")
+mat1
+```
+
+(4)构造如下所示2╳4╳2数组arr1，data=1:16, 并显示。
+, , 北方
+
+       大一 大二 大三 大四
+同意      1    3    5    7
+
+不同意    2    4    6    8
+
+, , 南方
+
+       大一 大二 大三 大四
+同意      9   11   13   15
+
+不同意   10   12   14   16
+
+```{r}
+dim1 <- c("同意","不同意")
+dim2 <- c("大一","大二","大三","大四")
+dim3 <- c("北方","南方")
+arr1 <- array(
+  data = 1:16,
+  c(2,4,2),
+  dimnames = list(
+    dim1,dim2,dim3
+  )
+)
+arr1
+```
+
+# R语言可视化操作题
+
+## 3.1
+
+1. 根据data3.RDada加载的data1数据集绘制以下图形，该数据集记录了2022年第三季度各地区居民人均消费支出排名前8的省份。
+
+(1)加载data3.RDada数据。
+```{r}
+load("/Users/geqianqian/Documents/Class/R语言可视化/试卷/模拟题/data3.RData")
+```
+
+(2)根据数据绘制条形图，x轴为地区，y轴为居民人均消费支出。
+```{r}
+barplot(data1$居民人均消费支出,names.arg = data1$地区)
+```
+
+
+
+(3)添加x轴标签为地区，y轴标签为居民人均消费支出(元)，题目名称设为2022年第三季度各地区居民人均消费支出情况。
+```{r}
+barplot(data1$居民人均消费支出,
+        names.arg = data1$地区,
+        xlab = "地区",
+        ylab = "居民人均消费支出(元)",
+        main = "2022年第三季度各地区居民人均消费支出情况")
+```
+
+
+(4)使用调色板RColorBrewer包中的brewer.pal(8,"Blues")定义颜色并绘制条形图。
+```{r}
+library(RColorBrewer)
+barplot(data1$居民人均消费支出,
+        names.arg = data1$地区,
+        xlab = "地区",
+        ylab = "居民人均消费支出(元)",
+        main = "2022年第三季度各地区居民人均消费支出情况",
+        col = brewer.pal(8,"Blues"))
+```
+
+
+(5)使用ylim语句拓展y轴坐标范围为0-35000。
+```{r}
+library(RColorBrewer)
+barplot(data1$居民人均消费支出,
+        names.arg = data1$地区,
+        xlab = "地区",
+        ylab = "居民人均消费支出(元)",
+        main = "2022年第三季度各地区居民人均消费支出情况",
+        col = brewer.pal(8,"Blues"),
+        ylim = c(0,35000))
+```
+
+ggplot2示范
+```{r}
+library(ggplot2)
+ggplot(data1,aes(x=地区,y=居民人均消费支出,fill=地区))+
+  geom_bar(stat = "identity")+
+  labs(x="地区",y="居民人均消费支出",title = "2022年第三季度各地区居民人均消费支出情况")+
+  scale_fill_brewer(palette = "Blues")+
+  coord_cartesian(ylim = c(0,35000))
+```
+
+
+## 3.2
+
+2.利用R自带的diamonds数据集绘制以下图形。diamonds数据集包含了约5400颗钻石的价格(price)和质量的信息。钻石质量评估指标（4个）：克拉重量（carat）、切工（cut）、颜色（color）、净度（clarity）物理指标（5个）：深度（depth)、钻面宽度（table)、x、y、z。
+    (提示：diamonds数据集需先加载ggplot2包，library(ggplot2)）
+(1)绘制基于深度depth的直方图。
+```{r}
+library(ggplot2)
+ggplot(diamonds,aes(x=depth))+
+  geom_histogram(bins = 30)
+```
+
+
+
+(2)将直方图的填充颜色设置为#E78AC3。
+```{r}
+library(ggplot2)
+ggplot(diamonds,aes(x=depth))+
+  geom_histogram(bins = 30,fill="#E78AC3")
+```
+
+
+
+(3)绘制基于深度depth的核密度图。
+```{r}
+library(ggplot2)
+ggplot(diamonds,aes(x=depth))+
+  geom_density()
+```
+
+
+
+
+(4)绘制基于深度depth和切工(cut)的核密度比较曲线,其中切工cut为分类依据( aes(x=depth,color=cut))。
+```{r}
+library(ggplot2)
+ggplot(diamonds,aes(x=depth,color=cut))+
+  geom_density()
+```
+
+
+
+
+
+(5)绘制按切工(cut)分类的雷达图。
+```{r}
+library(ggiraphExtra)
+ggRadar(diamonds,aes(color=cut))
+```
+
+
+
+3.利用R自带的trees数据集绘制以下图形，该数据集收集了31棵黑樱花树的直径、高度和体积，以英寸为单位
+(1)绘制直径（Girth）和体积(Volume)两个变量的散点图（x轴为Girth,y轴为Volume)。
+```{r}
+attach(trees)
+plot(Girth,Volume)
+```
+
+```{r}
+library(ggplot2)
+ggplot(trees,aes(x=Girth,y=Volume))+
+  geom_point()
+```
+
+(2)设置点的类型为菱形（pch=18)，填充颜色为cyan。
+```{r}
+plot(Girth,Volume,pch=18,col="cyan")
+```
+
+(3)添加线性回归线,并设置回归线的颜色为red3。
+```{r}
+plot(Girth,Volume,pch=18,col="cyan")
+abline(lm(Volume~Girth),col="red3")
+```
+
+```{r}
+ggplot(trees,aes(x=Girth,y=Volume))+
+  geom_point(color="cyan")+
+  geom_smooth(method = "lm")
+```
+
+
+(4)使用corrplot工具，绘制该数据集的散点图矩阵。
+```{r}
+library(corrplot)
+mat1 <- cor(trees)
+corrplot(mat1)
+```
+
+
+(5)根据trees数据集绘制3D散点图。
+```{r}
+library(scatterplot3d)
+scatterplot3d(trees)
+```
+
+
+
+4.根据data3.RDada加载的places数据集绘制以下图形,data2数据集记录了2019年5月1日至2019年8月23日期间，杭州、宁波、温州、丽水、舟山五个城市的B指标的每月测量值，请根据该数据集绘制以下图形。
+(1)绘制基于日期和宁波的折线图，x轴为日期，y轴为宁波。
+```{r}
+library(ggplot2)
+ggplot(places,aes(x=日期,y=宁波))+
+  geom_line()
+```
+
+(2)绘制基于日期和宁波的面积图，x轴为日期，y轴为宁波。
+```{r}
+library(ggplot2)
+ggplot(places,aes(x=日期,y=宁波))+
+  geom_area()
+```
+(3)通过reshape2的melt函数将places数据集融合成长格式，id.vars="日期",variable.name="区域",value.name="指标值"。
+```{r}
+library(reshape2)
+df <- melt(places,id.vars = "日期",
+           variable.name = "区域",
+           value.name = "指标值")
+```
+
+(4)根据新生成的数据集绘制折线图,x轴为日期,y轴为B指标的指标值，颜色依据为五个区域,即x=日期，y=指标值, color=区域。
+```{r}
+ggplot(df,aes(x=日期,y=指标值,color=区域))+
+  geom_line()
+```
+
+(5)根据新生成的数据集绘制面积图,x轴为日期,y轴为B指标的指标值，颜色依据为五个区域,即x=日期，y=指标值, fill=区域。
+```{r}
+ggplot(df,aes(x=日期,y=指标值,fill=区域))+
+  geom_area(alpha=0.5)
+```
