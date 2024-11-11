@@ -1,0 +1,178 @@
+---
+title: "04 类别数据可视化"
+date-modified: last-modified
+date-format: iso
+highlight-style: pygments
+number-sections: true
+format: 
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: left
+    toc-title: Contents
+    code-fold: show
+editor: visual
+execute:
+  warning: false
+  cache: true
+crossref: 
+  fig-title: 图 #图的默认标签（默认是"Figure"）
+  fig-prefix: 图 # 图的默认引用样式（默认是"Figure"）
+theme:
+  light: flatly
+  dark: darkly
+---
+
+# 字体设置
+
+```{r}
+#| include: false
+library(showtext)
+showtext_auto(enable=T)
+font_add("STKaiti","/Library/Fonts/stkaiti.ttf")
+```
+
+```{r}
+library(ggplot2)
+mytheme <-   theme(
+    text = element_text(size = 16,
+                        family = "STKaiti"),
+    axis.title = element_text(size = 20)
+  )
+```
+
+# 准备
+
+## 数据准备
+
+```{r}
+load("../Output/chapter4.RData")
+```
+
+## 包准备
+```{r}
+#| message: false
+library(dplyr)
+library(gridExtra)
+library(RColorBrewer)
+```
+
+# 帕累托图
+```{r}
+d <- data3_2 %>% select(支出项目,北京) %>% rename(支出金额=北京) %>% 
+  arrange(desc(支出金额))
+head(d)
+```
+
+## 计算累积百分比
+```{r}
+# 计算累积百分比
+d$累积百分比 <- round(cumsum(d$支出金额)/sum(d$支出金额),4)*100
+```
+
+```{r}
+ggplot(d,aes(x=支出项目,y=支出金额))+
+  geom_col()+
+  geom_text(aes(label = 支出金额),nudge_y = 1000)
+```
+
+## 降序排列
+```{r}
+d2 <- d
+d2$支出项目 <- factor(d2$支出项目,ordered = T,levels = d$支出项目)
+```
+
+```{r}
+ggplot(d2,aes(x=支出项目,y=支出金额))+
+  geom_col()+
+  geom_text(aes(label = 支出金额),nudge_y = 1000)
+```
+
+```{r}
+p1 <- ggplot(d2,aes(x=支出项目,y=支出金额))+
+  geom_col(aes(fill=支出项目))+
+  geom_text(aes(label = 支出金额),nudge_y = 1000)+
+  scale_fill_brewer(palette = "Reds",direction = -1)
+p1
+```
+
+## 添加累积分布线
+```{r}
+p1+geom_line(aes(x=as.numeric(支出项目),y=累积百分比*max(支出金额/100)))+
+  geom_point(aes(x=as.numeric(支出项目),y=累积百分比*max(支出金额/100)))+
+  scale_y_continuous(sec.axis = sec_axis(~./max(d2$支出金额/100)))+
+  annotate("text",x=8.3,y=10000,label="百分比(%)",angle=90)+
+  annotate("text",x=5,y=13500,label="累积百分比曲线")
+```
+
+```{r}
+ggplot(d2,aes(x=as.numeric(支出项目),y=累积百分比))+
+  geom_line()+
+  geom_point()
+```
+
+# 条形图
+
+## 垂直堆叠图
+```{r}
+ggplot(data3_1,aes(x=满意度,fill=网购原因))+
+  geom_bar()+
+  stat_count(aes(label=after_stat(count)),geom = "text",position = position_stack(0.5))
+```
+
+
+## 不等宽并列条形图
+
+```{r}
+#| message: false
+library(ggiraphExtra)
+```
+不等宽堆叠条形图
+```{r}
+ggSpine(data3_1,aes(x=满意度,fill=网购原因))
+```
+
+不等宽并列条形图
+```{r}
+ggSpine(data3_1,aes(x=满意度,fill=网购原因),position = "dodge")
+```
+
+## 百分比条形图
+```{r}
+ggplot(data3_1,aes(x=满意度,fill=性别))+
+  geom_bar()
+```
+
+
+
+```{r}
+data3_1 %>% select(满意度,性别) %>% table() %>% as.data.frame() %>%
+  group_by(满意度) %>% 
+  mutate(percent=Freq/sum(Freq)) %>% ungroup() %>% 
+  ggplot(aes(x=满意度,y=percent,fill=性别))+
+  geom_bar(stat = "identity")
+```
+
+## 添加误差信息
+```{r}
+data2_1 <- read.csv("../Input/classdata/mydata/chap02/data2_1.csv")
+```
+
+```{r}
+#| message: false
+library(tidyr)
+```
+
+
+```{r}
+df <- data2_1 %>% gather(key = "课程",value = "成绩",R语言,Python语言) %>% 
+  group_by(课程) %>% 
+  mutate(mean=mean(成绩),sd=sd(成绩),ymin=mean-sd,ymax=mean+sd) %>% select(课程,mean,sd,ymin,ymax) %>% unique()
+```
+
+
+```{r}
+
+```
+
+

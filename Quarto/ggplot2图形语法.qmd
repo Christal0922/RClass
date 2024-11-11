@@ -26,12 +26,14 @@ theme:
 # 字体设置
 
 ```{r}
+#| include: false
 library(showtext)
 showtext_auto(enable=T)
 font_add("STKaiti","/Library/Fonts/stkaiti.ttf")
 ```
 
 ```{r}
+library(ggplot2)
 mytheme <-   theme(
     text = element_text(size = 16,
                         family = "STKaiti"),
@@ -77,13 +79,14 @@ ggplot(BOD,aes(Time,demand))+
 ### 散点图
 
 ```{r}
+library(ggplot2)
 ggplot(CO2,aes(conc,uptake,
              color = Treatment))+
   geom_point(size=3,alpha=0.5)+
   geom_smooth(method = "lm",formula = y~x,se=F)+
   facet_wrap(~Type)+
   labs(x="CO2浓度",y="CO2摄取量",title = "不同地区植物二氧化碳摄取量")+
-  theme_bw()
+  theme_bw()+mytheme
 ```
 
 解决标注的上下标问题
@@ -92,7 +95,7 @@ ggplot(CO2,aes(conc,uptake,
 ggplot(CO2,aes(conc,uptake,
              color = Treatment))+
   labs(x=expression("CO"[2]~"浓度"),
-       y=expression("CO" [2]~"摄取量(μmol/m"^2~"sec)"))
+       y=expression("CO" [2]~"摄取量(μmol/m"^2~"sec)"))+mytheme
 ```
 
 ### 箱线图
@@ -106,7 +109,7 @@ ggplot(CO2,aes(Treatment,uptake))+
   facet_wrap(~Type)+
   coord_flip()+
   theme_bw()+
-  labs(title = "耐寒处理与非耐寒处理")
+  labs(title = "耐寒处理与非耐寒处理")+mytheme
 ```
 
 设置图例标题为中文
@@ -158,7 +161,7 @@ p1 <- ggplot(mammals,aes(x = body,y = brain))+
 ```{r}
 p1+ggrepel::geom_label_repel(
   aes(label=rownames(mammals)),size=1,max.overlaps = 100
-)
+)+mytheme
 ```
 
 考虑到极端值对线性回归结果的影响，非洲象和亚洲象的影响，对两个变量同时进行对数转换
@@ -179,9 +182,103 @@ expression("平均脑重(log"["10"]*"(g))",
            labels=trans_format("log10",math_format(10^.x)))
   )+
   geom_smooth(method = "lm",col="#C42126",se=FALSE,linewidth=1)+
-  theme_classic()
+  theme_classic()+mytheme
 ```
 
 ## iris鸢尾花数据集
 
-### 散点图
+### 数据(Data)
+
+```{r}
+knitr::kable(iris[1:15,])
+```
+
+### 视觉通道映射(Aes)
+
+```{r}
+ggplot(iris,aes(x=Sepal.Length,y=Sepal.Width))
+```
+
+### 几何对象(geom)
+
+```{r}
+ggplot(iris,aes(x=Sepal.Length,y=Sepal.Width))+geom_point()
+```
+
+### 分面(facet)
+
+```{r}
+ggplot(iris,aes(x=Sepal.Length,y=Sepal.Width))+geom_point()+
+  facet_wrap(~Species)
+```
+
+### 统计(statistics)
+
+```{r}
+ggplot(iris,aes(x=Sepal.Length,y=Sepal.Width))+
+  geom_point()+
+  facet_wrap(~Species)+
+  geom_smooth(method = "lm",se=F,color="red")
+```
+
+### 坐标系(coordinates)
+
+```{r}
+ggplot(iris,aes(x=Sepal.Length,y=Sepal.Width))+
+  geom_point()+
+  facet_wrap(~Species)+
+  geom_smooth(method = "lm",se=F,color="red",linetype=2)+
+  labs(x="花萼长度(cm)",y="花萼宽度(cm)",title = "鸢尾花不同品种的花萼长宽比较")+
+  coord_cartesian(xlim = c(4,8),ylim = c(1.5,4.5))
+```
+
+### 主题(theme)
+
+```{r}
+ggplot(iris,aes(x=Sepal.Length,y=Sepal.Width))+
+  geom_point()+
+  facet_wrap(~Species)+
+  geom_smooth(method = "lm",se=F,color="red")+
+  labs(x="花萼长度(cm)",y="花萼宽度(cm)",title = "鸢尾花不同品种的花萼长宽比较")+
+  coord_cartesian(xlim = c(4,8),ylim = c(1.5,4.5))+
+  theme_bw()+
+  theme(text = element_text(family = "STKaiti"))
+```
+
+# ggplot2作图的一般步骤
+
+-   准备数据，一般为数据框， 且一般为长表，即每个观测时间占一行， 每个观测变量占一列。
+-   将数据输入到ggplot()函数中， 并指定参与作图的每个变量分别映射到哪些图形特性， 比如映射为x坐标、y坐标、颜色、形状等。 这些映射称为aesthetic mappings或aesthetics。
+-   选择一个合适的图形类型， 函数名以geom_开头， 如geom_point()表示散点图。 图形类型简称为geom。 将ggplot()部分与geom_xxx()部分用加号连接。 到此已经可以作图，下面的步骤是进一步的细化设定。
+-   设定适当的坐标系统， 如coord_cartesian(), scale_x_log10()等。 仍用加号连接。
+-   设定标题和图例位置等，如labs()。 仍用加号连接。
+
+这个流程的大致模板为
+
+```{r}
+#| eval: false
+p <- ggplot(data=<输入数据框>,
+  mapping=aes(<维度>=<变量名>,
+    <维度>=<变量名>, <...>))
+p + geom_<图形类型>(<...>) + 
+  scale_<映射>_<类型>(<...>) +
+  coord_<类型>(<...>) +
+  labs(<...>)
+```
+
+其中\<...\>表示额外的选项。 变量p包含做出的图形的所有数据与设定， 变量名可以任意取。
+
+# 课本案例
+
+## 准备数据
+
+```{r}
+load("../Output/chapter03绘图基础.RData")
+```
+
+## 绘制散点图
+
+```{r}
+ggplot(data2_1,aes(x=R语言,y=Python语言))+
+  geom_point()
+```

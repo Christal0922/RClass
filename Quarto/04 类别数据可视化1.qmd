@@ -1,0 +1,445 @@
+---
+title: "04 类别数据可视化"
+date-modified: last-modified
+date-format: iso
+highlight-style: pygments
+number-sections: true
+format: 
+  html:
+    toc: true
+    toc-depth: 4
+    toc-location: left
+    toc-title: Contents
+    code-fold: show
+editor: visual
+execute:
+  warning: false
+  cache: true
+crossref: 
+  fig-title: 图 #图的默认标签（默认是"Figure"）
+  fig-prefix: 图 # 图的默认引用样式（默认是"Figure"）
+theme:
+  light: flatly
+  dark: darkly
+---
+
+# 准备
+
+## 准备包
+
+```{r}
+#| message: false
+library(ggplot2) #绘图
+library(dplyr) #数据分析
+library(RColorBrewer) #调用调色板
+```
+
+## 主题设置
+
+```{r}
+#| message: false
+library(ggplot2)
+mytheme <-   theme(
+    text = element_text(size = 16,
+                        family = "STKaiti"),
+    axis.title = element_text(size = 20)
+  )
+```
+
+```{r}
+#| include: false
+library(showtext)
+showtext_auto(enable=T)
+font_add("STKaiti","/Library/Fonts/stkaiti.ttf")
+```
+## 数据准备
+
+```{r}
+load("../Output/chapter4.RData")
+```
+
+# 条形图
+
+## 单变量条形图
+
+### 普通条形图
+
+```{r}
+ggplot(data3_1,aes(x=性别))+
+  geom_bar()+
+  labs(y="人数")+
+  mytheme
+```
+
+#### 设置颜色
+
+-   依据性别进行填充颜色设置
+
+```{r}
+ggplot(data3_1,aes(x=性别,fill=性别))+
+  geom_bar()+
+  labs(y="人数")+
+  mytheme
+```
+
+-   手动设置填充颜色
+
+```{r}
+ggplot(data3_1,aes(x=性别,fill=性别))+
+  geom_bar()+
+  scale_fill_manual(values = c("black","grey"))+
+  labs(y="人数")+
+  mytheme
+```
+
+-   使用调色板设置填充颜色
+
+```{r}
+ggplot(data3_1,aes(x=满意度,fill=满意度))+
+  geom_bar()+
+  scale_fill_brewer(palette = "Set1")+
+  labs(y="人数")+
+  mytheme
+```
+
+#### 修改类别顺序
+
+```{r}
+ggplot(data3_1,aes(x=满意度,fill=满意度))+
+  geom_bar()+
+  scale_x_discrete(limits=c("满意","中立","不满意"))+
+  labs(y="人数")+
+  mytheme
+```
+
+#### 添加数值标签
+
+```{r}
+ggplot(data3_1,aes(x=满意度,fill=满意度))+
+  geom_bar()+
+  stat_count(aes(label=after_stat(count)),
+             geom = "text",vjust=-0.5)+
+  labs(y="人数")+
+  mytheme
+```
+
+-   显示百分比
+
+```{r}
+df1 <- data3_1 %>% select(满意度) %>% 
+  table() %>% as.data.frame()
+df1$percent <- df1$Freq/sum(df1$Freq)
+head(df1)
+```
+
+```{r}
+df1 %>% ggplot(aes(x=满意度,y=Freq))+
+  geom_bar(stat = "identity",width = 0.8,
+           fill=brewer.pal(3,"Set2"))+
+  geom_text(aes(label=paste0(percent*100,"%")),
+            vjust=-0.5)+
+  labs(y="人数",title = "添加百分比标签")+
+  mytheme
+```
+
+### 帕累托图
+
+```{r}
+#| label: data-消费支出
+df2 <- data3_2 %>% select(支出项目,北京) %>% 
+  arrange(desc(北京))  #降序排列
+# 将支出项目变为有序因子
+df2$支出项目 <- factor(df2$支出项目,ordered = T,
+                       levels = df2$支出项目)
+```
+
+简单条形图
+
+```{r}
+ggplot(df2)+
+  geom_col(aes(x=支出项目,y=北京,fill=支出项目))+
+  scale_fill_brewer(palette = "Reds",direction = -1)+
+  labs(y="支出金额")+mytheme+
+  theme(axis.text = element_text(size = 8,angle = 45))
+```
+
+累积百分比曲线
+
+```{r}
+df2$percent <- round(cumsum(df2$北京)/sum(df2$北京),4)*100
+ggplot(df2,aes(x=as.numeric(支出项目),y=percent))+
+  geom_line()+
+  geom_point(shape=23,fill="white")+
+  labs(x="支出项目",y="百分比(%)")+
+  mytheme
+```
+
+#### 帕累托图
+
+见[@fig-帕累托图]
+
+```{r}
+#| fig-cap: "2020年北京城镇居民人均消费支出的帕累托图"
+#| fig-align: center
+#| label: fig-帕累托图
+magnif <- max(df2$北京)/100
+ggplot(df2)+
+  geom_col(aes(x=支出项目,y=北京,fill=支出项目))+
+  scale_fill_brewer(palette = "Reds",direction = -1)+
+  labs(y="支出金额")+
+  geom_line(aes(x=as.numeric(支出项目),y=percent*magnif))+
+  geom_point(aes(x=as.numeric(支出项目),y=percent*magnif))+
+  scale_y_continuous(sec.axis = sec_axis(~./magnif))+
+  annotate("text",x=8.3,y=10000,label="百分比(%)",
+           angle=90,family="STKaiti")+
+  annotate("text",x=5,y=13500,
+           label="累积百分比曲线",family="STKaiti")+
+  labs(x="支出项目",y="支出金额\n(元)")+
+  mytheme+
+  theme(axis.text = element_text(size = 8,angle = 45))
+  
+```
+
+## 多变量条形图
+
+### 堆叠条形图
+
+见[@fig-堆叠条形图]
+
+```{r}
+#| label: fig-堆叠条形图
+#| fig-cap: "网购原因、满意度人数分布的堆叠条形图"
+#| fig-align: center
+ggplot(data3_1,aes(x=满意度,fill=网购原因))+
+  geom_bar()+
+  stat_count(aes(label=after_stat(count)),
+             geom = "text",
+             position = position_stack(0.5))+
+  labs(y="人数")+mytheme
+```
+
+### 并列条形图
+
+见[@fig-并列条形图]
+
+```{r}
+#| label: fig-并列条形图
+#| fig-cap: "网购原因、满意度人数分布的并列条形图"
+ggplot(data3_1,aes(x=满意度,fill=网购原因))+
+  geom_bar(position = "dodge")+
+  stat_count(aes(label=after_stat(count)),
+             geom = "text",
+             position = position_dodge(0.9),
+             vjust=-0.5)+
+  labs(y="人数")+mytheme
+```
+
+### 不等宽条形图
+
+```{r}
+#| message: false
+library(ggiraphExtra)
+```
+
+-   堆叠
+
+```{r}
+ggSpine(data3_1,aes(x=满意度,fill=网购原因))+
+  mytheme
+```
+
+-   并列
+
+```{r}
+ggSpine(data3_1,aes(x=满意度,fill=网购原因),
+        position = "dodge")+
+  mytheme
+```
+
+### 百分比条形图
+
+见[@fig-百分比堆叠图]
+
+```{r}
+#| message: false
+library(reshape2)
+```
+
+计算按地区分组的百分比
+
+```{r}
+df3 <- data3_2 %>% melt(id.vars = "支出项目",
+                 variable.name = "地区",
+                 value.name = "支出金额") %>% 
+  group_by(地区) %>% 
+  mutate(percent=round(支出金额/sum(支出金额),4)*100)
+```
+
+```{r}
+#| label: fig-百分比堆叠图
+#| fig-cap: 2020年4个地区城镇居民人均消费支出的百分比
+ggplot(df3,aes(x=地区,y=percent,fill=支出项目))+
+  geom_bar(stat = "identity")+
+  scale_fill_brewer(palette = "Blues")+
+  labs(y="百分比(%)")+mytheme
+```
+
+### 添加误差信息
+
+#### 数据准备
+
+```{r}
+data2_1 <- read.csv("../Input/classdata/mydata/chap02/data2_1.csv")
+```
+
+#### plyr包的mutate函数计算平均成绩和标准差
+
+```{r}
+df4 <- data2_1 %>% melt(id.vars = c("性别","专业"),
+                 variable.name = "课程",
+                 value.name = "分数") %>% 
+  group_by(课程) %>% 
+  mutate(mean=mean(分数),
+         sd=sd(分数),
+         n=length(分数),
+         sem=sd(分数)/sqrt(n)) %>% 
+  select(课程,mean,sd) %>% unique()
+```
+
+```{r}
+ggplot(df4,aes(x=课程,y=mean,fill=课程))+
+  geom_col(width = 0.5)+
+  geom_errorbar(aes(ymin = mean-sd,
+                    ymax = mean+sd),
+                width = 0.3)+
+  mytheme
+```
+
+#### mutate函数绘制并列条形图
+
+```{r}
+data2_1 %>% melt(id.vars = c("性别","专业"),
+                 variable.name = "课程",
+                 value.name = "分数") %>% 
+  group_by(课程,性别) %>% 
+  mutate(mean=mean(分数),
+         sd=sd(分数),
+         n=length(分数),
+         sem=sd(分数)/sqrt(n)) %>% 
+  select(课程,性别,mean,sd) %>% unique() %>% 
+  ggplot(aes(x=课程,y=mean,fill=性别))+
+  geom_bar(stat = "identity",
+           position = "dodge")+
+  geom_errorbar(aes(ymin = mean-sd,
+                    ymax = mean+sd),
+                width = 0.3,
+                position = position_dodge(0.9))+
+  labs(y="平均成绩")+
+  guides(fill=guide_legend(title = NULL))+
+  mytheme
+```
+
+#### apply函数
+
+计算平均成绩
+
+```{r}
+apply(data2_1[,3:4],2,mean)
+```
+
+-   设置自定义函数mystats存储统计信息
+
+```{r}
+mystats <- function(x) {
+  mean=mean(x)
+  sd=sd(x)
+  n=length(x)
+  sem=sd(x)/sqrt(n)
+  return(c(mean,sd,n,sem))
+}
+```
+
+-   计算平均成绩和标准差
+
+```{r}
+apply(data2_1[,3:4],2,mystats)
+```
+
+```{r}
+df5 <- as.data.frame(t(apply(data2_1[,3:4],2,mystats)))
+colnames(df5) <- c("mean","sd","n","sem")
+df5$课程 <- factor(rownames(df5))
+head(df5)
+```
+
+## 极坐标图
+
+单变量极坐标图
+
+```{r}
+ggplot(data3_1,aes(x=满意度,fill = 满意度))+
+  geom_bar()+
+  scale_fill_brewer(palette = "Reds")+
+  coord_polar()+mytheme 
+```
+
+多变量极坐标图
+
+```{r}
+ggplot(data3_1,aes(x=满意度,fill = 网购原因))+
+  geom_bar(width = 1)+
+  scale_fill_brewer(palette = "Reds",direction = -1)+
+  coord_polar()+mytheme
+```
+
+### 消费支出案例
+
+#### 玫瑰图
+```{r}
+ggplot(df2,aes(x=支出项目,y=北京,fill=支出项目))+
+  geom_bar(stat = "identity")+
+  scale_fill_brewer(palette = "Spectral",direction = -1)+
+  coord_polar()+
+  ylim(-1000,18000)+
+  mytheme
+```
+
+
+#### 将y轴映射到极坐标系
+```{r}
+df3 <- data3_2 %>% select(支出项目,北京) %>% arrange(北京)
+df3$支出项目 <- factor(df3$支出项目,ordered = T,
+                   levels = df3$支出项目)
+ggplot(df3,aes(x=支出项目,y=北京,fill=支出项目))+
+  geom_bar(stat = "identity")+
+  scale_fill_brewer(palette = "Spectral" )+
+  coord_polar(theta = "y",start = 0)+
+  ylim(0,20000)+
+  labs(y="支出金额")+mytheme
+```
+
+#### 显示分类变量
+```{r}
+data3_2 %>% melt(id.vars = "支出项目",
+                 variable.name = "地区",
+                 value.name = "支出金额") %>% 
+  ggplot(aes(x=支出项目,y=支出金额,fill=地区))+
+  geom_bar(stat = "identity")+
+  scale_fill_brewer(palette = "Reds",direction = -1)+
+  coord_polar()+mytheme
+```
+
+
+## 饼图
+
+```{r}
+data3_1 %>% ftable() %>% as.data.frame() %>% 
+  ggPie(aes(pies=满意度,count=Freq))
+  
+```
+
+### 圆环图
+```{r}
+ggDonut(data3_2,aes(x=支出项目,y=北京))
+```
+

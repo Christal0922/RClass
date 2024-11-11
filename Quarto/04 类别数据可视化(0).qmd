@@ -1,0 +1,556 @@
+---
+title: "04 类别数据可视化"
+date-modified: last-modified
+date-format: iso
+highlight-style: pygments
+number-sections: true
+format: 
+  html:
+    toc: true
+    toc-depth: 4
+    toc-location: left
+    toc-title: Contents
+    code-fold: show
+editor: visual
+execute:
+  warning: false
+  cache: true
+crossref: 
+  fig-title: 图 #图的默认标签（默认是"Figure"）
+  fig-prefix: 图 # 图的默认引用样式（默认是"Figure"）
+theme:
+  light: flatly
+  dark: darkly
+---
+
+# 准备
+
+## 准备包
+```{r}
+library(ggplot2) #绘图
+library(dplyr) #数据分析
+library(RColorBrewer) #调用调色板
+```
+
+
+## 字体设置
+
+```{r}
+#| include: false
+library(showtext)
+showtext_auto(enable=T)
+font_add("STKaiti","/Library/Fonts/stkaiti.ttf")
+```
+
+```{r}
+#| message: false
+library(ggplot2)
+mytheme <-   theme(
+    text = element_text(size = 16,
+                        family = "STKaiti"),
+    axis.title = element_text(size = 20)
+  )
+```
+
+
+
+## 数据准备
+
+```{r}
+load("../Output/chapter4.RData")
+```
+
+# 帕累托图
+```{r}
+d <- data3_2 %>% select(支出项目,北京) %>% rename(支出金额=北京) %>% 
+  arrange(desc(支出金额))
+head(d)
+```
+
+## 计算累积百分比
+```{r}
+# 计算累积百分比
+d$累积百分比 <- round(cumsum(d$支出金额)/sum(d$支出金额),4)*100
+```
+
+```{r}
+ggplot(d,aes(x=支出项目,y=支出金额))+
+  geom_col()+
+  geom_text(aes(label = 支出金额),nudge_y = 1000)
+```
+
+## 降序排列
+```{r}
+d2 <- d
+d2$支出项目 <- factor(d2$支出项目,ordered = T,levels = d$支出项目)
+```
+
+```{r}
+ggplot(d2,aes(x=支出项目,y=支出金额))+
+  geom_col()+
+  geom_text(aes(label = 支出金额),nudge_y = 1000)
+```
+
+```{r}
+p1 <- ggplot(d2,aes(x=支出项目,y=支出金额))+
+  geom_col(aes(fill=支出项目))+
+  geom_text(aes(label = 支出金额),nudge_y = 1000)+
+  scale_fill_brewer(palette = "Reds",direction = -1)
+p1
+```
+
+## 添加累积分布线
+```{r}
+p1+geom_line(aes(x=as.numeric(支出项目),y=累积百分比*max(支出金额/100)))+
+  geom_point(aes(x=as.numeric(支出项目),y=累积百分比*max(支出金额/100)))+
+  scale_y_continuous(sec.axis = sec_axis(~./max(d2$支出金额/100)))+
+  annotate("text",x=8.3,y=10000,label="百分比(%)",angle=90)+
+  annotate("text",x=5,y=13500,label="累积百分比曲线")
+```
+
+```{r}
+ggplot(d2,aes(x=as.numeric(支出项目),y=累积百分比))+
+  geom_line()+
+  geom_point()
+```
+
+# 条形图
+
+## 垂直堆叠图
+```{r}
+ggplot(data3_1,aes(x=满意度,fill=网购原因))+
+  geom_bar()+
+  stat_count(aes(label=after_stat(count)),geom = "text",position = position_stack(0.5))
+```
+
+
+## 不等宽并列条形图
+
+```{r}
+#| message: false
+library(ggiraphExtra)
+```
+不等宽堆叠条形图
+```{r}
+ggSpine(data3_1,aes(x=满意度,fill=网购原因))
+```
+
+不等宽并列条形图
+```{r}
+ggSpine(data3_1,aes(x=满意度,fill=网购原因),position = "dodge")
+```
+
+## 百分比条形图
+```{r}
+ggplot(data3_1,aes(x=满意度,fill=性别))+
+  geom_bar()
+```
+
+
+
+```{r}
+data3_1 %>% select(满意度,性别) %>% table() %>% as.data.frame() %>%
+  group_by(满意度) %>% 
+  mutate(percent=Freq/sum(Freq)) %>% ungroup() %>% 
+  ggplot(aes(x=满意度,y=percent,fill=性别))+
+  geom_bar(stat = "identity")
+```
+
+## 添加误差信息
+```{r}
+data2_1 <- read.csv("../Input/classdata/mydata/chap02/data2_1.csv")
+```
+
+```{r}
+#| message: false
+library(tidyr)
+```
+
+
+```{r}
+df <- data2_1 %>% gather(key = "课程",value = "成绩",R语言,Python语言) %>% 
+  group_by(课程) %>% 
+  mutate(mean=mean(成绩),sd=sd(成绩),ymin=mean-sd,ymax=mean+sd) %>% select(课程,mean,sd,ymin,ymax) %>% unique()
+```
+
+
+```{r}
+
+```
+
+# 加载包
+```{r}
+#| message: false
+library(ggplot2)
+library(RColorBrewer)
+library(dplyr)
+```
+
+
+
+# 简单条形图
+
+```{r}
+ggplot(data3_2,aes(x=支出项目,y=北京))+
+  geom_bar(stat = "identity")
+```
+
+```{r}
+ggplot(data3_2,aes(x=支出项目,y=北京,
+                   fill = 支出项目))+
+  geom_col()+
+  scale_fill_brewer(palette = "Reds",direction = -1)
+```
+
+条形图降序排列
+```{r}
+d1 <- data3_2 %>% select(支出项目,北京) %>% 
+  arrange(desc(北京))
+```
+
+```{r}
+d1$支出项目 <- factor(d1$支出项目,
+                  ordered = T,
+                  levels = d1$支出项目)
+```
+
+```{r}
+ggplot(d1,aes(x=支出项目,y=北京))+
+  geom_col()
+```
+字体设置
+```{r}
+mytheme <- theme(
+  text = element_text(family = "STKaiti")
+)
+```
+
+
+添加数据标签
+```{r}
+ggplot(d1,aes(x=支出项目,y=北京))+
+  geom_col()+
+  geom_text(aes(label = 北京),vjust=-0.5)+
+  labs(y="支出金额\n(元)")+
+  mytheme
+```
+
+## 计算累积百分比
+```{r}
+
+d1$累积百分比 <- round(cumsum(d1$北京)/sum(d1$北京),4)*100
+head(d1)
+```
+
+```{r}
+ggplot(d1,aes(x=as.numeric(支出项目),y=累积百分比))+
+  geom_line()+
+  geom_point()
+```
+
+## 帕累托图
+```{r}
+ggplot(d1)+
+  geom_col(aes(x=支出项目,y=北京,fill=支出项目))+
+  scale_fill_brewer(palette = "Reds",direction = -1)+
+  geom_line(aes(x=as.numeric(支出项目),
+                y=累积百分比*max(北京/100)))+
+  scale_y_continuous(sec.axis = sec_axis(~./max(d1$北京/100)))+
+  annotate("text",x=8.3,y=10000,
+           label="百分比(%)",angle=90)+
+  annotate("text",x=6,y=13000,
+           label="累积百分比曲线")+
+  labs(y="支出金额(元)",
+       title = "2020年北京城镇居民人均消费支出的帕累托图")
+```
+
+## 不等宽条形图
+
+```{r}
+#| message: false
+#install.packages("ggiraphExtra")
+library(ggiraphExtra)
+```
+
+```{r}
+ggSpine(data3_1,aes(x=满意度,fill=网购原因))
+```
+
+```{r}
+ggSpine(data3_1,aes(x=满意度,fill=网购原因),position = "dodge")
+```
+
+## 添加误差线
+
+### 准备数据
+```{r}
+data2_1 <- read.csv("../Input/classdata/mydata/chap02/data2_1.csv")
+```
+
+### 计算平均值，标准差和标准误
+```{r}
+head(data2_1,3)
+```
+
+#### apply
+```{r}
+# 计算平均值
+apply(data2_1[,3:4],2,mean)
+```
+
+```{r}
+funy <- function(x) {
+  s_mean=mean(x)
+  s_sd=sd(x)
+  s_n=length(x)
+  s_sem=sd(x)/sqrt(length(x))
+  return(c(s_mean,s_sd,s_n,s_sem))
+}
+```
+
+```{r}
+d2 <- t(apply(data2_1[,3:4],2,funy))
+colnames(d2) <- c("mean","sd","n","sem")
+head(d2)
+```
+
+#### mutate
+```{r}
+library(tidyr)
+```
+
+
+```{r}
+d3 <- data2_1 %>% gather(key="课程",value = "分数",R语言,Python语言) %>% 
+  group_by(课程) %>% 
+  mutate(mean=mean(分数),
+         sd=sd(分数),
+         n=length(分数),
+         sem=sd(分数)/sqrt(n)) %>% 
+  select(课程,mean,sd,n,sem) %>% unique()
+```
+
+### 带误差线的条形图
+```{r}
+ggplot(d3,aes(x=课程,y=mean,fill=课程))+
+  geom_col(width = 0.5)+
+  geom_errorbar(aes(ymin=mean-sd,ymax=mean+sd),width=0.3)
+```
+
+### 按照性别分组
+```{r}
+data2_1 %>% gather(key="课程",value = "分数",R语言,Python语言) %>% 
+  group_by(课程,性别) %>% 
+  mutate(mean=mean(分数),
+         sd=sd(分数),
+         n=length(分数),
+         sem=sd(分数)/sqrt(n)) %>% 
+  ggplot(aes(x=课程,y=mean,fill=性别))+
+  geom_bar(stat = "identity",
+           position = "dodge")+
+  geom_errorbar(aes(ymin = mean-sd,
+                    ymax = mean+sd),
+                width = 0.3,
+                position = position_dodge(0.9))
+```
+
+```{r}
+data2_1 %>% reframe(测试=R语言+Python语言)
+```
+
+```{r}
+library(plyr)
+data2_1 %>% ddply("性别",summarize,
+                  mean=mean(R语言))
+```
+
+```{r}
+library(reshape2)
+data2_1 %>% melt(id.vars=c("性别","专业"))
+```
+
+# 准备工作 
+
+## 数据
+
+```{r}
+load("../Output/chapter4.RData")
+```
+
+## 准备包
+```{r}
+#| message: false
+library(ggplot2) #绘图
+library(dplyr) #数据操作
+library(RColorBrewer) #调色板
+```
+
+
+# 简单条形图
+## 北京消费支出
+```{r}
+head(data3_2)
+```
+
+### 基于北京在各个支出项目支出金额的条形图
+
+#### geom_bar
+```{r}
+ggplot(data3_2,aes(x=支出项目,y=北京))+
+  geom_bar(stat = "identity")
+```
+
+#### geom_col
+```{r}
+ggplot(data3_2,aes(x=支出项目,y=北京,
+                   fill = 支出项目))+
+  geom_col()+
+  scale_fill_brewer(palette = "Reds",
+                    direction = -1)
+```
+
+#### 降序排列
+```{r}
+# library(dplyr)
+df1 <- data3_2 %>% select(支出项目,北京) %>% 
+  arrange(desc(北京))
+head(df1) #查看数据前6行
+```
+
+将支出项目作为有序因子，它的水平为降序计算后的水平,使得条形图实现降序排列
+```{r}
+df1$支出项目 <- factor(df1$支出项目,
+                   ordered = T,
+                   levels = df1$支出项目)
+```
+
+```{r}
+ggplot(df1,aes(x=支出项目,y=北京))+
+  geom_col()+
+  geom_text(aes(label = 北京),vjust=-0.5)
+```
+
+### 累积计算
+```{r}
+# 计算累积百分比
+df1$累积百分比 <- round(cumsum(df1$北京)/sum(df1$北京),4)*100
+head(df1)
+```
+
+```{r}
+df1 %>% 
+  ggplot(aes(x=as.numeric(支出项目),y=累积百分比))+
+  geom_line()+
+  geom_point()
+```
+
+### 帕累托图（条形图+累积分布曲线）
+```{r}
+ggplot(df1)+
+  geom_col(aes(x=支出项目,y=北京,fill=支出项目))+
+  scale_fill_brewer(palette = "Reds",direction = -1)+
+  geom_line(aes(x=as.numeric(支出项目),y=累积百分比*max(北京)/100))+
+  geom_point(aes(x=as.numeric(支出项目),y=累积百分比*max(北京)/100))+
+  scale_y_continuous(
+    sec.axis = sec_axis(~./(max(df1$北京)/100))
+  )+
+  annotate("text",x=8.3,y=10000,
+           label="百分比(%)",angle=90)+
+  annotate("text",x=6,y=13000,
+           label="累积分布曲线")+
+  labs(y="支出金额\n(元)",
+       title = "2020年北京城镇居民人均消费支出的帕累托图")
+```
+
+# 条形图添加误差信息
+
+## 准备数据
+
+### 读入数据
+```{r}
+data2_1 <- read.csv("../Input/classdata/mydata/chap02/data2_1.csv")
+head(data2_1,2)
+```
+
+### 数据处理1-计算R语言与Python的平均成绩
+
++ apply函数
+```{r}
+apply(data2_1[,3:4],2,mean)
+```
+
++ mutate函数
+```{r}
+library(reshape2)
+data2_1 %>% melt(
+  id.vars = c("性别","专业"),
+  variable.name = "课程",
+  value.name = "分数") %>% head()
+```
+
+```{r}
+library(tidyr)
+data2_1 %>% gather(key="课程",
+                   value = "分数",R语言,Python语言) %>% 
+  group_by(课程) %>% 
+  mutate(n=length(分数))
+```
+
+```{r}
+apply(data2_1[,3:4], 2, mean)
+```
+
+```{r}
+funa <- function(x) {
+  s_mean=mean(x)
+  s_sd=sd(x)
+  s_n=length(x)
+  s_sem=sd(x)/sqrt(s_n)
+  return(c(s_mean,s_sd,s_n,s_sem))
+}
+```
+
+```{r}
+apply(data2_1[,3:4],2,funa)
+```
+
+```{r}
+df2 <- as.data.frame(t(apply(data2_1[,3:4],2,funa)))
+colnames(df2) <- c("mean","sd","n","sem")
+df2$课程=factor(rownames(df2))
+head(df2)
+```
+
+误差线以标准差来显示
+```{r}
+ggplot(df2,aes(x=课程,y=mean,fill=课程))+
+  geom_col(width = 0.8)+
+  geom_errorbar(aes(ymin = mean-sd,ymax = mean+sd),width=0.3)
+```
+
+误差线以标准误来显示
+```{r}
+ggplot(df2,aes(x=课程,y=mean,fill=课程))+
+  geom_col(width = 0.8)+
+  geom_errorbar(aes(ymin = mean-sem,ymax = mean+sem),width=0.3)
+```
+
+```{r}
+data2_1 <- read.csv("../Input/classdata/mydata/chap02/data2_1.csv")
+```
+
+
+```{r}
+data2_1 %>% gather(key="课程",value = "分数",R语言,Python语言) %>% 
+  group_by(课程) %>% 
+  mutate(mean=mean(分数),
+         sd=sd(分数),
+         n=length(分数),
+         sem=sd(分数)/sqrt(n)) %>% 
+  ggplot(aes(x=课程,y=mean))+
+  geom_bar(stat = "identity")+
+  geom_errorbar(aes(ymin = mean-sd,
+                    ymax = mean+sd),
+                width = 0.3)
+```
+

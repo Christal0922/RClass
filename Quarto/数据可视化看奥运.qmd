@@ -1,0 +1,130 @@
+---
+title: "数据可视化看奥运"
+date-modified: last-modified
+date-format: iso
+highlight-style: pygments
+number-sections: true
+format: 
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: left
+    toc-title: Contents
+    code-fold: show
+editor: visual
+execute:
+  warning: false
+  cache: true
+crossref: 
+  fig-title: 图 #图的默认标签（默认是"Figure"）
+  fig-prefix: 图 # 图的默认引用样式（默认是"Figure"）
+theme:
+  light: flatly
+  dark: darkly
+---
+
+# 准备
+
+## 准备包
+
+```{r}
+#| message: false
+library(ggplot2) #绘图
+library(dplyr) #数据分析
+library(RColorBrewer) #调用调色板
+library(ggrepel)
+```
+
+## 主题设置
+
+```{r}
+#| message: false
+library(ggplot2)
+mytheme <-   theme(
+    text = element_text(size = 16,
+                        family = "STKaiti"),
+    axis.title = element_text(size = 20)
+  )
+```
+
+```{r}
+#| include: false
+library(showtext)
+showtext_auto(enable=T)
+font_add("STKaiti","/Library/Fonts/stkaiti.ttf")
+```
+## 数据准备
+
+```{r}
+load("../Output/summer_Olympics.RData")
+```
+
+### 数据处理
+
+# 可视化
+
+## 中国 vs 美国历届奥运金牌数对比
+```{r}
+country_list <- c("中国","美国")
+summer1 <- summer %>% filter(地区 %in% country_list)
+```
+
+```{r}
+p1 <- summer1 %>%   ggplot(aes(x=年份,y=金牌,size = 金牌,color=地区))+
+  geom_point(alpha=0.7)+
+  scale_size(range = c(3,15))+
+  coord_cartesian(ylim = c(0,100),xlim = c(1980,2028))+
+  scale_color_manual(values = c("#F93F43","#4A4C72"))+
+  scale_x_continuous(breaks=unique(summer$年份))
+```
+
+```{r}
+p1+
+  geom_label_repel(aes(label=金牌),size=3)+
+  annotate("text",2004,72,label="北京奥运会实现反超",family="STKaiti")+
+  annotate("segment",x=2008,xend = 2004,y=58,yend = 70,arrow=arrow(length = unit(.2,"cm")))+
+  annotate("text",2018,12,label="巴黎奥运会持平",family="STKaiti")+
+  annotate("segment",x=2018,xend = 2024,y=15,yend = 35,arrow=arrow(length = unit(.2,"cm")))+
+  labs(x="",y="金牌数",
+       title = "中国 VS 美国",
+       subtitle = "历届夏季奥运会金牌数对比")+
+  theme_classic()+
+  mytheme
+```
+
+
+```{r}
+p2 <- summer1 %>%   ggplot(aes(x=年份,y=金牌,size = 金牌,color=地区))+
+  geom_point(alpha=0.7)
+```
+
+## 中国 vs 欧洲奖牌数对比
+
+```{r}
+#| eval: false
+country_list <- c("中国","英国","法国","德国","美国")
+summer2 <- summer %>% filter(地区 %in% country_list & 年份==2024) %>% 
+  arrange(总数) 
+summer2$地区 <- factor(summer2$地区,
+                     levels = summer2$地区)
+str(summer2)
+```
+
+```{r}
+country_list <- c("中国","英国","法国","德国")
+summer2 <- summer %>% filter(地区 %in% country_list & 年份==2024) %>% 
+  arrange(总数) %>% 
+  mutate(region=factor(地区,levels=地区))
+```
+
+```{r}
+summer2 %>% 
+  ggplot(aes(x=总数,y=region,fill = region))+
+  geom_col()+
+  scale_fill_manual(
+    values = c("#0E0E0E","#9C9C9C","#585858","#E03C2F"))+
+  labs(x="奖牌数",y="",
+       title = "中国 vs 欧洲奖牌数对比",
+       subtitle = "2024巴黎奥运会")
+```
+

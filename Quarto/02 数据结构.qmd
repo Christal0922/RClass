@@ -1,0 +1,462 @@
+---
+title: "02 数据结构"
+date-modified: last-modified
+date-format: iso
+highlight-style: pygments
+number-sections: true
+format: 
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: left
+    code-fold: show
+editor: visual
+execute:
+  warning: false
+  cache: false
+theme:
+  light: flatly
+  dark: darkly
+---
+
+# 向量
+
+## 向量的创建
+
+### c函数
+
+```{r}
+a <- c(2,5,8,3,6,-2)
+a
+```
+
+### 通过特殊函数创建
+
+-   seq函数
+
+-   rep函数
+
+## 向量的索引
+
+```{r}
+# 打印输出a
+a
+# 提取第2个位置的元素
+a[2]
+# 提取除第2个位置的其他元素
+a[-2]
+# 自定义提取元素，TRUE，FALSE
+a[c(T,F,T,F,T,F)]
+# 提取a向量中大于0的元素
+a[a>0]
+# 提取a向量中等于5的元素
+a[a==5]
+# 提取a向量中等于5的元素的位置信息
+which(a==6)
+```
+
+## 向量的计算
+
+# 矩阵
+
+## 矩阵的创建
+
+```{r}
+mat1 <- matrix(1:6,
+               nrow = 2,
+               ncol = 3,
+               byrow = TRUE)
+
+rownames(mat1) <- c("张三","李四")
+colnames(mat1) <- c("英语","数学","语文")
+mat1
+```
+
+-   随机数 runif
+
+```{r}
+# 设置随机种子数为123
+set.seed(123)
+# 产生6个最小值为70，最大值为99的随机数
+grade <- round(runif(6,70,99))
+grade
+```
+
+```{r}
+mat1 <- matrix(grade,nrow = 2,ncol = 3,
+       dimnames = list(
+         c("张三","李四"),
+         c("英语","数学","语文")
+       ))
+mat1
+```
+
+产生一个矩阵，模拟宁波、上海两地的天气情况，行名为宁波、上海，列名为第一天，第二天
+
+```{r}
+tmperature <- c(25,27,20,21)
+mat2 <- matrix(tmperature,
+       nrow = 2,ncol = 2,
+       dimnames = list(
+         c("宁波","上海"),
+         c("第一天","第二天")
+       ))
+mat2
+```
+
+产生一个2x4矩阵，数据为1:8，行名为宁波、上海，列名为春、夏、秋、冬
+
+```{r}
+mat3 <- matrix(1:8,
+               nrow = 2,
+               ncol = 4)
+rownames(mat3) <- c("宁波","上海")
+colnames(mat3) <- c("春","夏","秋","冬") 
+mat3
+```
+
+## 矩阵的索引
+
+```{r}
+mat1
+# 提取张三的数学成绩
+mat1[1,2]
+# 提取张三的所有成绩
+mat1[1,]
+# 提取数学课的所有成绩
+mat1[,2]
+# 提取张三的英语和语文成绩
+mat1[1,c(1,3)]
+mat1[1,-2]
+```
+
+## 矩阵的修改
+
+```{r}
+# 将张三的数学成绩修正为99
+mat1[1,2] <- 99
+# 将张三的名字改为张三丰
+rownames(mat1)[1] <- "张三丰"
+# 将英语的名字改为科学
+colnames(mat1)[1] <- "科学"
+mat1
+```
+
+## 矩阵的信息的查看
+
+```{r}
+# 查看行数和列数
+dim(mat1)
+# 查看矩阵的类型
+class(mat1)
+# 查看矩阵的数据结构
+str(mat1)
+```
+
+## 矩阵的转置
+
+```{r}
+t(mat1)
+```
+
+# 数组
+
+产生一个2x3x2的数组
+
+```{r}
+dim1 <- c("男生","女生")
+dim2 <- c("赞成","中立","反对")
+dim3 <- c("1班","2班")
+array(1:12,c(2,3,2),
+      dimnames = list(
+        dim1,dim2,dim3
+      ))
+```
+
+产生一个2X4X3的数组
+
+```{r}
+dim1 <- c("男生","女生")
+dim2 <- c("语文","数学","科学","英语")
+dim3 <- c("1班","2班","3班")
+array(1:24,c(2,3,4),dimnames = list(dim1,dim3,dim2))
+```
+
+R语言课程发布了一个调查问卷，是否同意线上开课，同学们的意见分为赞成、中立、反对，调查了22大数据Z1、22大数据Z2、23大数据Z1、23大数据Z2四个班级，并对男生、女生进行了区分，请用数组生成各个维度的人数
+
+```{r}
+dim1 <- c("男","女")
+dim2 <- c("赞成","中立","反对")
+dim3 <- c("22大数据Z1","22大数据Z2","23大数据Z1","23大数据Z2")
+arr1 <- array(1:24,
+              c(2,3,4),
+              dimnames = list(dim1,dim2,dim3))
+arr1
+```
+
+# 数据框
+
+## 数据框的创建
+
+创建一个向量sname,存储学生姓名，要求存储5个学生姓名
+```{r}
+sname <- c("蔡徐坤","陈立农","叶正","尤嘉珂",
+           "蔡启越")
+sname
+```
+
+创建一个向量stat存储五位学生的统计学成绩，通过rnorm函数生成，平均值为80,标准差为10
+```{r}
+set.seed(123)
+stat <- round(rnorm(5,80,10))
+stat
+```
+
+创建一个向量math存储五位学生的数学成绩，通过runif函数生成，最小值为55,最大值为100
+```{r}
+set.seed(123)
+math <- round(runif(5,55,100))
+```
+
+### 创建数据框
+```{r}
+stugrade <- data.frame(sname,stat,math)
+stugrade
+```
+
+## 读取数据框
+```{r}
+table1_1 <- read.csv("/Users/Project/R/RClass/Input/classdata/mydata/chap01/table1_1.csv")
+```
+
+## 查看数据框
+
+### 查看数据框的结构
+```{r}
+str(stugrade)
+```
+
+查看数据类型
+```{r}
+class(stugrade)
+```
+
+查看数据框有几行
+```{r}
+nrow(stugrade)
+```
+
+查看数据框有几列
+```{r}
+ncol(stugrade)
+```
+
+查看数据框的维度，同时显示几行和几列
+```{r}
+dim(stugrade)
+```
+
+查看数据框的前3行
+```{r}
+head(stugrade,3)
+```
+
+查看数据框的最后3行
+```{r}
+tail(stugrade,3)
+```
+
+
+
+## 数据框的索引
+
+访问统计学成绩
+```{r}
+stugrade[,2]
+stugrade$stat
+```
+
+访问学生姓名和数学成绩
+```{r}
+data.frame(stugrade$sname,stugrade$math)
+```
+
+```{r}
+stugrade[,c(1,3)]
+```
+
+访问叶正的所有成绩
+```{r}
+stugrade[3,]
+```
+
+访问叶正和蔡启越的所有成绩
+
+```{r}
+stugrade[c(3,5),]
+```
+
+
+## 数据框的排序
+
+### order函数
+按照数学成绩进行降序排序
+```{r}
+stugrade[order(stugrade$math,decreasing = TRUE),]
+```
+
+### dplyr包的arrange函数
+
+```{r}
+#install.packages("dplyr")
+library(dplyr)
+```
+
+```{r}
+arrange(stugrade,desc(math))
+```
+
+
+## 数据框的筛选
+
+找出数学成绩大于85的学生信息
+```{r}
+table1_1[table1_1$数学>=85,]
+```
+
+### dplyr包的filter函数
+```{r}
+filter(table1_1,数学>=85)
+```
+
+### dplyr的管道符号
+筛选出数学成绩大于等于85的同学，然后按照数学成绩进行降序排序,显示学生姓名和统计学、数学成绩
+```{r}
+table1_1 %>% filter(数学>=85) %>% 
+  arrange(desc(数学)) %>% 
+  select(姓名,统计学,数学)
+```
+
+```{r}
+table1_1 %>% filter(数学>=85) %>% 
+  arrange(desc(数学)) %>% 
+  select(-经济学) #或者select(!经济学)
+```
+
+#### 案例
+```{r}
+data1_1 <- read.csv("../Input/classdata/mydata/chap01/data1_1.csv")
+```
+
+```{r}
+str(data1_1)
+```
+
+筛选网购金额大于800元的所有学生
+```{r}
+data1_1 %>% filter(网购金额>=800)
+```
+
+筛选网购金额在700～800元之间的男生
+```{r}
+data1_1 %>% filter(网购金额>=700 & 网购金额<=800 & 性别=="男")
+```
+
+
+
+# 列表
+
+# 因子
+
+
+## 因子的创建
+
+
+## 无序因子的创建
+```{r}
+sex <- c("男","女","男","男","女")
+```
+
+```{r}
+str(sex)
+```
+
+将sex变量转换为无序因子
+```{r}
+sex2 <- factor(sex)
+sex2
+```
+
+将sex2转换为数值
+```{r}
+as.numeric(sex2)
+```
+
+
+## 有序因子的创建
+
+存储7名同学的成绩信息
+```{r}
+grade <- c("优秀","良好","中","及格","不及格","良好","中")
+```
+
+```{r}
+grade2 <- factor(grade,ordered = TRUE,
+                 levels = c("优秀","良好","中","及格","不及格"))
+grade2
+```
+```{r}
+grade2
+as.numeric(grade2)
+```
+
+```{r}
+region <- c("省","市","县","乡","省","省","县")
+```
+
+```{r}
+region2 <- factor(region,ordered = TRUE,
+                  levels = c("省","市","县","乡"))
+```
+
+```{r}
+region2
+as.numeric(region2)
+```
+
+```{r}
+table(region2)
+```
+
+
+
+
+# 数据的读取与保存
+
+
+## 数据的读取
+
+### 读取csv格式数据
+```{r}
+data1_1 <- read.csv("../Input/classdata/mydata/chap01/data1_1.csv")
+```
+
+### 读取RData格式数据
+```{r}
+load("/Users/Project/R/RClass/Output/d1.RData")
+```
+
+
+## 数据的保存
+
+
+### 保存csv格式的数据
+```{r}
+write.csv(data1_1,file = "../Output/1.csv")
+```
+
+### 保存为RData格式的数据
+```{r}
+save(data1_1,stugrade,file ="../Output/d1.RData")
+```
+
