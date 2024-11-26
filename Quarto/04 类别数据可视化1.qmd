@@ -52,6 +52,7 @@ library(showtext)
 showtext_auto(enable=T)
 font_add("STKaiti","/Library/Fonts/stkaiti.ttf")
 ```
+
 ## 数据准备
 
 ```{r}
@@ -395,6 +396,7 @@ ggplot(data3_1,aes(x=满意度,fill = 网购原因))+
 ### 消费支出案例
 
 #### 玫瑰图
+
 ```{r}
 ggplot(df2,aes(x=支出项目,y=北京,fill=支出项目))+
   geom_bar(stat = "identity")+
@@ -404,8 +406,8 @@ ggplot(df2,aes(x=支出项目,y=北京,fill=支出项目))+
   mytheme
 ```
 
-
 #### 将y轴映射到极坐标系
+
 ```{r}
 df3 <- data3_2 %>% select(支出项目,北京) %>% arrange(北京)
 df3$支出项目 <- factor(df3$支出项目,ordered = T,
@@ -419,6 +421,7 @@ ggplot(df3,aes(x=支出项目,y=北京,fill=支出项目))+
 ```
 
 #### 显示分类变量
+
 ```{r}
 data3_2 %>% melt(id.vars = "支出项目",
                  variable.name = "地区",
@@ -429,7 +432,6 @@ data3_2 %>% melt(id.vars = "支出项目",
   coord_polar()+mytheme
 ```
 
-
 ## 饼图
 
 ```{r}
@@ -439,7 +441,7 @@ data3_1 %>% ftable() %>% as.data.frame() %>%
 ```
 
 ### 圆环图
+
 ```{r}
 ggDonut(data3_2,aes(x=支出项目,y=北京))
 ```
-

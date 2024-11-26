@@ -1,0 +1,226 @@
+---
+title: "05 分布特征2"
+format: 
+  html:
+    toc: true
+execute: 
+  warning: false
+---
+
+```{r}
+#| include: false
+library(showtext)
+showtext_auto(enable=T)
+font_add("STKaiti","/Library/Fonts/stkaiti.ttf")
+```
+
+## 数据
+```{r}
+load("../Output/chapter5.RData")
+```
+
+## 直方图
+```{r}
+library(ggplot2)
+```
+
+绘制基于钻石价格price的直方图
+```{r}
+ggplot(diamonds,aes(x=price))+
+  geom_histogram(bins = 30,
+                 fill="forestgreen",
+                 color="grey20")
+```
+绘制基于钻石价格price的直方图,y轴以密度density的方式进行显示
+```{r}
+ggplot(diamonds,aes(x=price,y=..density..))+
+  geom_histogram(bins = 30,
+                 fill="forestgreen",
+                 color="grey20")+
+  geom_density(color="red",linetype=2)
+```
+
+### 叠加直方图
+
+绘制基于钻石价格price的直方图，颜色的填充依据为钻石的切工cut
+```{r}
+ggplot(diamonds,aes(x=price,fill = cut))+
+  geom_histogram(bins = 30,
+                 color="grey20",
+                 alpha=0.6)
+```
+
+### 分面直方图
+```{r}
+ggplot(diamonds,aes(x=price,fill = cut))+
+  geom_histogram(bins = 30,
+                 color="grey20")+
+  facet_wrap(~cut,ncol = 3,scales = "free")
+```
+计算偏度系数
+```{r}
+library(e1071) # 统计相关计算
+library(dplyr) # 数据操作
+labels <- diamonds %>% group_by(cut) %>% 
+  summarise(偏度系数=skewness(price)) %>%  
+  mutate(labs=paste0("skewness==",
+                    round(偏度系数,3)))
+```
+
+```{r}
+ggplot(diamonds,aes(x=price,fill = cut))+
+  geom_histogram(bins = 30,
+                 color="grey20")+
+  geom_text(x=10000,y=200,aes(label = labs),data = labels,size=3)+
+  facet_wrap(~cut,ncol = 3,scales = "free")
+```
+
+
+## 核密度图
+绘制基于钻石价格price的核密度图
+```{r}
+ggplot(diamonds,aes(x=price))+
+  geom_density(fill="forestgreen",
+               alpha=0.3)
+```
+
+### 核密度比较图
+
+基于价格price和切工cut的核密度比较图
+```{r}
+ggplot(diamonds,aes(x=price,fill=cut))+
+  geom_density(alpha=0.3)
+```
+
+### 分面核密度图
+```{r}
+ggplot(diamonds,aes(x=price,fill=cut))+
+  geom_density(alpha=0.3)+
+  facet_wrap(~cut,ncol = 3,scales = "free")
+```
+
+```{r}
+ggplot(diamonds,aes(x=price,fill=cut))+
+  geom_density(alpha=0.3)+
+  facet_grid(color~cut)
+```
+
+## 箱线图
+
+### 数据融合
+```{r}
+library(reshape2)
+df <- melt(data4_1[,-2],
+           id.vars = c("日期","质量等级"),
+           variable.name = "指标",
+           value.name = "指标值")
+```
+
+```{r}
+library(RColorBrewer)
+ggplot(df,aes(x=指标,y=指标值,fill = 指标))+
+  geom_boxplot()+
+  scale_fill_brewer(palette = "Set2")
+```
+### 添加均值点
+```{r}
+ggplot(df,aes(x=指标,y=指标值,fill = 指标))+
+  geom_boxplot()+
+  scale_fill_brewer(palette = "Set2")+
+  stat_summary(fun = "mean",geom = "point",shape=21,size=2.5,fill="white")
+```
+
+
+### 对数变换
+```{r}
+ggplot(df,aes(x=指标,y=log10(指标值),fill = 指标))+
+  geom_boxplot()+
+  scale_fill_brewer(palette = "Set2")
+```
+### 标准化变换
+```{r}
+library(plyr) 
+df2 <- ddply(df,"指标",transform,
+      标准化值=scale(指标值))
+```
+
+```{r}
+ggplot(df2,aes(x=指标,y=标准化值,fill=指标))+
+  geom_boxplot()+
+  scale_fill_brewer(palette = "Set2")
+```
+
+### 不等宽箱线图
+```{r}
+ggplot(data4_1,aes(x=质量等级,y=PM2.5,fill=质量等级))+
+  geom_boxplot(varwidth = TRUE)+
+  scale_fill_brewer(palette = "Set2")
+```
+
+### 不等宽凹槽箱线图
+```{r}
+ggplot(data4_1,aes(x=质量等级,y=PM2.5,fill=质量等级))+
+  geom_boxplot(varwidth = TRUE,
+               notch = T,
+               notchwidth = 0.5)+
+  scale_fill_brewer(palette = "Set2")
+```
+
+### 分组箱线图
+```{r}
+df$质量等级 <- factor(df$质量等级,
+                  levels = c( "优","良","轻度污染","中度污染","重度污染"))
+```
+
+
+
+```{r}
+ggplot(df,aes(x=指标,y=指标值,fill = 质量等级))+
+  geom_boxplot()+
+  scale_fill_brewer(palette = "Blues")
+```
+
+```{r}
+index <- c("PM2.5","PM10")
+df3 <- df %>% filter(指标 %in% index)
+```
+
+```{r}
+ggplot(df3,aes(x=指标,y=指标值,fill = 质量等级))+
+  geom_boxplot()+
+  scale_fill_brewer(palette = "Blues")
+```
+
+## 小提琴图
+
+
+```{r}
+ggplot(df,aes(x=指标,y=指标值,fill=指标))+
+  geom_violin(scale = "width",trim = FALSE)+
+  geom_point(color="black",size=0.8)+
+  geom_boxplot(outlier.size = 0.7,outlier.colour = "white",width=0.2,fill="white")+ #设置离群点参数
+  scale_fill_brewer(palette = "Set2")+
+  stat_summary(fun = "mean",geom = "point",shape=21,size=2)+ # 添加均值点
+  theme(legend.position = "none")
+```
+
+### 标准化小提琴图
+```{r}
+ggplot(df2,aes(x=指标,y=标准化值,fill=指标))+
+  geom_violin(scale = "width")+
+  geom_point(color="black",size=0.8)+
+  geom_boxplot(outlier.size = 0.7,outlier.colour = "white",width=0.2,fill="white")+ #设置离群点参数
+  scale_fill_brewer(palette = "Set2")+
+  stat_summary(fun = "mean",geom = "point",shape=21,size=2)+ # 添加均值点
+  theme(legend.position = "none")
+```
+
+### 分组小提琴图
+```{r}
+ggplot(df,aes(x=指标,y=指标值,fill=质量等级))+
+  geom_violin(scale = "width")+
+  scale_fill_brewer(palette = "Reds")+
+  facet_wrap(~指标,ncol = 3,scales = "free")+
+  theme(legend.position = "bottom")
+```
+

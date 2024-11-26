@@ -1,0 +1,56 @@
+---
+title: "04 类别数据可视化"
+date-modified: last-modified
+date-format: iso
+highlight-style: pygments
+number-sections: true
+format: 
+  html:
+    toc: true
+    toc-depth: 4
+    toc-location: left
+    toc-title: Contents
+    code-fold: show
+execute:
+  warning: false
+  cache: true
+theme:
+  light: flatly
+  dark: darkly
+---
+
+# 准备
+
+## 准备包
+
+```{r}
+#| message: false
+library(ggplot2) #绘图
+library(dplyr) #数据分析
+library(RColorBrewer) #调用调色板
+```
+
+## 主题设置
+
+```{r}
+#| message: false
+library(ggplot2)
+mytheme <-   theme(
+    text = element_text(size = 16,
+                        family = "STKaiti"),
+    axis.title = element_text(size = 20)
+  )
+```
+
+```{r}
+#| include: false
+library(showtext)
+showtext_auto(enable=T)
+font_add("STKaiti","/Library/Fonts/stkaiti.ttf")
+```
+
+## 数据准备
+
+```{r}
+load("../Output/chapter4.RData")
+```

@@ -1,0 +1,219 @@
+---
+title: "05 分布数据可视化"
+date-modified: last-modified
+date-format: iso
+highlight-style: pygments
+number-sections: true
+format: 
+  html:
+    toc: true
+    toc-depth: 4
+    toc-location: left
+    toc-title: Contents
+    code-fold: show
+editor: visual
+execute:
+  warning: false
+  cache: true
+crossref: 
+  fig-title: 图 #图的默认标签（默认是"Figure"）
+  fig-prefix: 图 # 图的默认引用样式（默认是"Figure"）
+theme:
+  light: flatly
+  dark: darkly
+---
+
+# 准备
+
+## 准备包
+
+```{r}
+#| message: false
+library(ggplot2) #绘图
+library(dplyr) #数据分析
+library(RColorBrewer) #调用调色板
+```
+
+## 主题设置
+
+```{r}
+#| message: false
+library(ggplot2)
+mytheme <-   theme(
+    text = element_text(size = 16,family = "STKaiti"),
+    axis.title = element_text(size = 18),
+    plot.title = element_text(hjust = 0.5,size = 24)
+  )
+```
+
+```{r}
+#| include: false
+library(showtext)
+showtext_auto(enable=T)
+font_add("STKaiti","/Library/Fonts/stkaiti.ttf")
+```
+
+## 准备数据
+
+```{r}
+data4_1 <- read.csv("../Input/classdata/mydata/chap04/data4_1.csv",stringsAsFactors = T)
+```
+
+# 直方图
+
+## hist
+
+```{r}
+hist(data4_1$AQI,
+     xlab = "AQI",ylab = "频数",
+     col="lightblue",
+     main = "直方图")
+```
+
+## ggplot2包的geom_histogram函数
+
+```{r}
+#| layout-ncol: 2
+library(ggplot2)
+ggplot(data4_1,aes(x=AQI))+
+  geom_histogram(fill="lightblue",
+                 color="grey50",
+                 bins = 30)
+
+ggplot(data4_1,aes(x=AQI))+
+  geom_histogram(fill="lightblue",
+                 color="grey50",
+                 binwidth = 25)
+```
+
+## 计算分布相关参数
+
+### 计算偏态系数
+
+```{r}
+library(e1071)
+l <- round(skewness(data4_1$AQI),4)
+```
+
+paste0实现字符串拼接
+
+```{r}
+a <- paste0("偏态系数=",l)
+a
+```
+
+直方图中添加偏态系数信息
+
+```{r}
+p1 <- ggplot(data4_1,aes(x=AQI))+
+  geom_histogram(fill="lightgreen",
+                 color="grey")
+p1
+```
+
+```{r}
+p1+annotate("text",x=210,y=37,
+            label=a)
+```
+
+### 计算峰度系数
+
+```{r}
+b <- paste0("峰度系数=",
+       round(kurtosis(data4_1$AQI),4))
+b
+```
+
+```{r}
+p1 <- ggplot(data4_1,aes(x=AQI))+
+  geom_histogram(fill="lightgreen",
+                 color="grey")
+p1
+```
+
+添加峰度系数
+
+```{r}
+p1+annotate("text",x=210,y=37,
+            label=b)
+```
+
+## 直方图的y轴以概率密度的方式进行显示
+
+```{r}
+ggplot(data4_1,aes(x=AQI,y=after_stat(density)))+
+  geom_histogram(fill="lightgreen",
+                 color="grey")+
+  geom_density()
+```
+
+```{r}
+ggplot(diamonds,aes(x=price,y=after_stat(density)))+
+  geom_histogram(fill="lightskyblue",
+                 color="grey40")+
+  geom_density()
+```
+
+# 核密度图
+
+```{r}
+ggplot(data4_1,aes(x=AQI))+
+  geom_density(fill="blue",alpha=0.5)
+```
+
+```{r}
+#| layout-ncol: 2
+ggplot(data4_1,aes(x=AQI))+
+  geom_density(fill="blue",alpha=0.5)+
+  labs(title = "(a) 默认带宽")
+
+ggplot(data4_1,aes(x=AQI))+
+  geom_density(fill="blue",alpha=0.5,bw=3)+
+  labs(title = "(b) bw=3")
+
+ggplot(data4_1,aes(x=AQI))+
+  geom_density(fill="blue",alpha=0.5,bw=5)+
+  labs(title = "(c) bw=5")
+
+ggplot(data4_1,aes(x=AQI))+
+  geom_density(fill="blue",alpha=0.5,bw=10)+
+  labs(title = "(d) bw=10")
+```
+
+# 多变量
+
+## 数据融合
+
+```{r}
+library(reshape2)
+df <- melt(data4_1,id.vars = c("日期","质量等级"),
+           variable.name = "指标",
+           value.name = "指标值")
+head(df)
+```
+
+## 叠加直方图
+
+```{r}
+ggplot(df,aes(x=指标值,y=after_stat(density),
+              fill=指标))+
+  geom_histogram(color="grey",alpha=0.6)
+```
+
+```{r}
+library(dplyr)
+index <- c("PM2.5","AQI")
+df2 <- df %>% filter(指标 %in% index)
+```
+
+```{r}
+ggplot(df2,aes(x=指标值,y=after_stat(density),fill=指标))+
+  geom_histogram(alpha=0.5,color="black")
+```
+
+## 核密度比较曲线
+
+```{r}
+ggplot(df2,aes(x=指标值,colour=指标))+
+  geom_density()
+```

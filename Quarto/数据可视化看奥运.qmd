@@ -53,6 +53,7 @@ library(showtext)
 showtext_auto(enable=T)
 font_add("STKaiti","/Library/Fonts/stkaiti.ttf")
 ```
+
 ## 数据准备
 
 ```{r}
@@ -64,6 +65,7 @@ load("../Output/summer_Olympics.RData")
 # 可视化
 
 ## 中国 vs 美国历届奥运金牌数对比
+
 ```{r}
 country_list <- c("中国","美国")
 summer1 <- summer %>% filter(地区 %in% country_list)
@@ -91,7 +93,6 @@ p1+
   theme_classic()+
   mytheme
 ```
-
 
 ```{r}
 p2 <- summer1 %>%   ggplot(aes(x=年份,y=金牌,size = 金牌,color=地区))+
@@ -127,4 +128,3 @@ summer2 %>%
        title = "中国 vs 欧洲奖牌数对比",
        subtitle = "2024巴黎奥运会")
 ```
-

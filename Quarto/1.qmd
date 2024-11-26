@@ -1,0 +1,30 @@
+---
+title: "Untitled"
+format: 
+  pdf:
+    documentclass: ctexart
+pdf-engine: xelatex
+---
+
+## 中文
+
+```{r}
+#| include: false
+library(showtext)
+showtext_auto(enable=T)
+font_add("STKaiti","/Library/Fonts/stkaiti.ttf")
+```
+
+
+```{r}
+library(ggplot2)
+ggplot()+
+  geom_text(aes(1,3,label="开题"))
+```
+
+```{r}
+ggplot(diamonds,aes(x=price))+
+  geom_histogram()+
+  labs(x="切工",y="频数",title = "测试")
+```
+

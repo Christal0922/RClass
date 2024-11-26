@@ -1,0 +1,181 @@
+---
+title: "05 分布特征2"
+format: 
+  html:
+    toc: true
+execute: 
+  warning: false
+---
+
+```{r}
+#| include: false
+library(showtext)
+showtext_auto(enable=T)
+font_add("STKaiti","/Library/Fonts/stkaiti.ttf")
+```
+
+## 数据
+```{r}
+load("../Output/chapter5.RData")
+```
+
+## 直方图
+
+绘制基于钻石克重carat的直方图
+```{r}
+library(ggplot2)
+ggplot(diamonds,aes(x=carat))+
+  geom_histogram(bins = 30,
+                 fill = "forestgreen",color="grey30")
+```
+
+绘制基于钻石克重carat的直方图,y轴以
+概率密度density的方式进行显示,并添加核密度曲线
+```{r}
+ggplot(diamonds,
+       aes(x=carat,y=after_stat(density)))+
+  geom_histogram(bins = 30,
+                 fill = "forestgreen",color="grey30")+
+  geom_density(linetype=2,color="red")
+```
+
+## 核密度图
+
+绘制基于钻石克重carat的核密度图
+```{r}
+ggplot(diamonds,aes(x=carat))+
+  geom_density(fill="blue",alpha=0.5)
+```
+
+## 多变量分布
+
+### 叠加直方图
+
+绘制基于钻石价格price和切工cut的叠加直方图，x轴为钻石价格price
+```{r}
+ggplot(diamonds,aes(x=price,fill=cut))+
+  geom_histogram(color="grey",alpha=0.5)
+```
+
+### 分面直方图
+```{r}
+ggplot(diamonds,aes(x=price,fill=cut))+
+  geom_histogram(color="grey",bins = 30)+
+  facet_wrap(~cut,ncol = 3,scale = "free")
+```
+
+```{r}
+library(e1071)
+library(dplyr)
+library(ggplot2)
+labels <- diamonds %>% group_by(cut) %>% 
+  summarise(skewness=skewness(price)) %>%   mutate(lab=paste0("skewness==",round(skewness,3)))
+```
+
+```{r}
+ggplot(diamonds)+
+  geom_histogram(aes(x=price,fill=cut),
+                 bins = 30)+
+  geom_text(x=10000,y=150,aes(label=lab),data = labels,parse = TRUE,size = 3)+
+  facet_wrap(~cut,ncol = 3,scale = "free")
+```
+
+### 核密度比较图
+```{r}
+ggplot(diamonds,aes(x=price,fill=cut))+
+  geom_density(alpha=0.3)
+```
+
+### 分面核密度图
+```{r}
+ggplot(diamonds,aes(x=price,fill=cut))+
+  geom_density(alpha=0.3)+
+  facet_wrap(~cut,ncol = 3,scales ="free")
+```
+
+```{r}
+ggplot(diamonds,aes(x=price,fill=cut))+
+  geom_density(alpha=0.3)+
+  facet_grid(color~cut)
+```
+
+## 箱线图
+
+### 数据融合
+```{r}
+library(reshape2)
+df <- melt(data4_1[,-2],
+           id.vars = c("日期","质量等级"),
+           variable.name = "指标",
+           value.name = "指标值")
+```
+
+```{r}
+library(RColorBrewer)
+palette <- brewer.pal(6,"Set2")
+```
+
+
+```{r}
+ggplot(df,aes(x=指标,y=指标值))+
+  geom_boxplot(fill=palette)
+```
+
+对数变换
+```{r}
+ggplot(df,aes(x=指标,y=log10(指标值)))+
+  geom_boxplot(fill=palette)+
+  stat_summary(fun = "mean",
+               geom = "point",
+               shape = 21,
+               size = 2.5,
+               fill = "white")
+```
+标准化变换
+```{r}
+library(plyr)
+library(dplyr)
+df2 <- df %>% ddply("指标",transform,标准化值=scale(指标值))
+```
+
+```{r}
+ggplot(df2,aes(x=指标,y=标准化值))+
+  geom_boxplot(fill=palette)
+```
+
+```{r}
+ggplot(data4_1,aes(x=质量等级,y=PM10))+
+  geom_boxplot(varwidth = TRUE,
+               notch = T,
+               notchwidth = 0.5)
+```
+
+## 分组箱线图
+```{r}
+library(dplyr)
+index <- c("PM10","二氧化氮")
+df3 <- df %>% filter (指标 %in% index)
+```
+
+```{r}
+df3$质量等级 <- factor(df3$质量等级,
+                   levels = c( "优","良","轻度污染","中度污染","重度污染"))
+```
+
+
+```{r}
+ggplot(df3,aes(x=指标,y=指标值,fill=质量等级))+
+  geom_boxplot()+
+  scale_fill_brewer(palette = "Blues")
+```
+
+## 小提琴图
+```{r}
+ggplot(df2,aes(x=指标,y=标准化值,fill = 指标))+
+  geom_violin()+
+  geom_point(color="black",size=1)+
+  geom_boxplot(outlier.size = 0.7,
+               width=0.2,fill="white")+
+  stat_summary(fun="mean",geom="point",shape=21,size=2)
+```
+

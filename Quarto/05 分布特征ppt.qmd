@@ -1,0 +1,285 @@
+---
+title: "05 数据分布可视化"
+author: "葛倩倩"
+format: 
+  revealjs:
+    slide-number: true
+  html: 
+    code-fold: show
+execute: 
+  warning: false
+  cache: true
+lang: zh
+toc: true
+fig-asp: 0.75
+---
+
+```{r}
+#| include: false
+#| output: false
+library(ggplot2)
+mytheme <-   theme(
+    text = element_text(size = 18,family = "STKaiti"),
+    axis.title = element_text(size = 20),
+    plot.title = element_text(hjust = 0.5,size = 24)
+  )
+```
+
+```{r}
+#| include: false
+library(showtext)
+showtext_auto(enable=T)
+font_add("STKaiti","/Library/Fonts/stkaiti.ttf")
+```
+## 直方图
+
+## 北京空气质量数据 {.smaller .scrollable transition="slide"}
+
+```{r}
+#| label: 读取数据
+#| include: false
+load("../Output/chapter5_分布.RData")
+```
+
+::: panel-tabset
+
+
+### Data
+
+```{r}
+knitr::kable(data4_1[1:10,])
+```
+
+### Plot
+```{r}
+#| echo: true
+ggplot(data4_1,aes(x=AQI))+geom_histogram()
+```
+
+:::
+
+## 设置直方图分组 {.smaller .scrollable transition="slide"}
+
+
+Code
+```{r}
+#| eval: false
+#| echo: true
+ggplot(data4_1,aes(x=AQI))+
+  geom_histogram(fill="lightskyblue",color="grey50")
+
+ggplot(data4_1,aes(x=AQI))+
+  geom_histogram(fill="lightskyblue",color="grey50",bins = 15)
+
+ggplot(data4_1,aes(x=AQI))+
+  geom_histogram(fill="lightskyblue",color="grey50",binwidth = 10)
+```
+
+
+Plot
+```{r}
+#| label: fig-AQI的直方图
+#| layout-ncol: 3
+#| echo: false
+#| fig-cap: "AQI的直方图"
+#| fig-subcap: 
+#|  - "默认分组"
+#|  - "分成15组"
+#|  - "箱宽为10"
+ggplot(data4_1,aes(x=AQI))+
+  geom_histogram(fill="lightskyblue",color="grey50")+
+  mytheme
+
+ggplot(data4_1,aes(x=AQI))+
+  geom_histogram(fill="lightskyblue",color="grey50",bins = 15)+
+  mytheme
+
+ggplot(data4_1,aes(x=AQI))+
+  geom_histogram(fill="lightskyblue",color="grey50",binwidth = 10)+
+  mytheme
+```
+
+
+
+## 薪资数据2 {.smaller .scrollable transition="slide"}
+
+
+::: panel-tabset
+
+
+### Data
+
+```{r}
+knitr::kable(Wage[1:6,])
+```
+
+### Plot
+```{r}
+#| echo: true
+ggplot(Wage,aes(x=wage))+geom_histogram()
+```
+:::
+
+## 为直方图添加信息 {.smaller .scrollable transition="slide"}
+
+```{r}
+p1 <- ggplot(Wage,aes(x=wage))+
+  geom_histogram(fill="lightskyblue",color="grey50",binwidth = 10)
+p1
+```
+
+添加峰度系数和偏度系数以及地毯图
+```{r}
+library(e1071)
+p2 <- p1+
+  geom_rug(size=0.2,color="grey20")+
+  annotate("text",x=250,y=350,label=paste0("偏度系数=",round(skewness(Wage$wage),4)),family="STKaiti")+
+  annotate("text",x=250,y=320,label=paste0("峰度系数=",round(kurtosis(Wage$wage),4)),family="STKaiti")
+```
+添加频数多边形和中位数点
+```{r}
+p3 <- p1+geom_freqpoly(color="red3",binwidth=10)+
+  annotate("point",x=median(Wage$wage),y=0,shape=21,fill="yellow",size=4)+
+  annotate("text",x=median(Wage$wage),y=30,label="中位数",family="STKaiti")+
+  labs(y="count")
+```
+添加核密度曲线
+```{r}
+p4 <- ggplot(Wage)+
+  geom_histogram(aes(x=wage,y = after_stat(density)),
+                 fill="lightskyblue",color="grey50",
+                 binwidth = 10)+
+  geom_density(aes(x=wage),color="red")+
+  annotate("text",x=200,y=0.005,label="核密度曲线",family="STKaiti")+
+  annotate("segment",x=170,xend = 160,y=0.005,yend = 0.005,
+           arrow=arrow(angle = 15,length = unit(0.1,"inches")))
+```
+添加理论正态分布曲线和均值线
+```{r}
+p5 <- ggplot(Wage)+
+  geom_histogram(aes(x=wage,y = after_stat(density)),
+                 fill="lightskyblue",color="grey50",
+                 binwidth = 10)+
+  stat_function(fun = dnorm,args = list(mean=mean(Wage$wage),sd=sd(Wage$wage)),
+  linetype=5,color="red2")+
+  annotate("text",x=230,y=0.0025,label="理论正态分布曲线",family="STKaiti")+
+  geom_vline(xintercept = mean(Wage$wage),linetype=2,
+             color="red2")+
+  annotate("text",x=125,y=0.012,label="均值线",family="STKaiti")
+```
+
+
+```{r}
+#| label: fig-添加信息
+#| layout-ncol: 2
+#| echo: false
+#| fig-cap: "添加不同信息的薪资的直方图"
+#| fig-subcap: 
+#|  - "添加地毯图和偏度于峰度系数"
+#|  - "添加频数多边形和中位数点"
+#|  - "添加核密度曲线"
+#|  - "添加理论正态分布曲线和均值线"
+
+p2+mytheme
+
+p3+mytheme
+
+p4+mytheme
+
+p5+mytheme
+
+```
+
+## 叠加直方图和镜像直方图
+```{r}
+#| label: fig-叠加直方图和镜像直方图
+#| layout-ncol: 2
+#| echo: false
+#| fig-cap: "叠加直方图和镜像直方图"
+#| fig-subcap: 
+#|  - "叠加直方图"
+#|  - "镜像直方图"
+ggplot(Wage,aes(x=wage,y=after_stat(density),fill = health))+
+  geom_histogram(bins = 30,alpha=0.5,color="grey50")+
+  guides(fill=guide_legend(nrow = 1))+
+  theme(legend.position=c(0.8,0.85),
+        legend.background = element_rect(fill = NA))
+
+ggplot(data4_1)+
+  geom_histogram(aes(x=AQI,y=after_stat(density)),
+                 color="grey50",fill="red",alpha=0.3,bins=30)+
+  geom_histogram(aes(x=PM2.5,y=-after_stat(density)),
+                 color="grey50",fill="blue",alpha=0.3,bins=30)+
+  annotate("text",x=160,y=0.0065,label = "AQI",color="red")+
+  annotate("text",x=160,y=-0.0065,label = "PM2.5",color="blue")
+```
+
+## 分面直方图
+```{r}
+#| eval: false
+#| echo: true
+# 计算偏度系数
+library(dplyr)
+df2 <- df %>% group_by(指标) %>% 
+  summarise(skewness=skewness(指标值)) %>% 
+  mutate(lab=paste0("skewness==",round(skewness,3)))
+```
+
+
+```{r}
+#| label: fig-分面直方图
+#| eval: false
+#| echo: true
+ggplot(df,aes(x=指标值,fill = 指标))+
+  geom_histogram(color="grey50",bins = 30)+
+  geom_text(aes(x=0,y=38,label = lab),data = df2,
+            parse = TRUE,hjust=-0.5,size = 3,color="grey40")+
+  facet_wrap(~指标,ncol = 3,scale = "free")
+```
+
+## 箱线图
+```{r}
+#| eval: false
+#| echo: true
+library(dplyr)
+index <- c("PM2.5","PM10","二氧化硫","一氧化碳","二氧化氮","臭氧浓度")
+df3 <- df %>% filter(指标 %in% index)
+```
+
+```{r}
+library(RColorBrewer)
+palette <- brewer.pal(6,"Set2")
+```
+
+```{r}
+#| eval: false
+library(ggplot2)
+ggplot(df3,aes(x=指标,y=指标值))+
+  geom_boxplot(fill=palette)+
+  stat_summary(fun = "mean",geom = "point",shape=21,
+               size=2.5,fill="white")
+```
+
+
+```{r}
+library(plyr)
+library(dplyr)
+df4 <- df3 %>% ddply("指标",transform,标准化值=scale(指标值))
+```
+
+
+```{r}
+library(ggplot2)
+ggplot(df4,aes(x=指标,y=标准化值,fill=指标))+
+  geom_boxplot()
+```
+
+```{r}
+df5 <- df3 %>% group_by(指标) %>% mutate(标准化值=scale(指标值)) %>% ungroup()
+```
+
+```{r}
+library(ggplot2)
+ggplot(df5,aes(x=指标,y=标准化值,fill=指标))+
+  geom_boxplot()
+```
